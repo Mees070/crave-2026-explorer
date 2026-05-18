@@ -1,0 +1,2637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>The Crave 2026 — Artist Explorer</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap');
+:root{
+  --bg:#0a0a0a;--s1:#111;--s2:#181818;
+  --b0:rgba(255,255,255,.06);--b1:rgba(255,255,255,.14);--b2:rgba(255,255,255,.28);
+  --tx:#f0ede8;--mu:#777;--di:#3a3a3a;
+  --cuboid:#7B6FE8;--sphere:#3DB88A;--tetra:#E8784A;--poly:#9E9E99;--pip:#D4992A;
+  --player-h:88px;
+  --top-chrome:132px;
+  --yt:#ff3b30;
+  --sc:#ff5500;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font-family:'DM Sans',sans-serif;font-size:14px;min-height:100vh;overflow-x:hidden;padding-bottom:var(--player-h)}
+
+#topChrome{border-bottom:.5px solid var(--b0)}
+.hdr{padding:1.1rem 2rem .65rem;display:flex;align-items:baseline;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.hdr-title{font-family:'Space Mono',monospace;font-size:17px;font-weight:700;letter-spacing:-.3px}
+.hdr-sub{font-family:'Space Mono',monospace;font-size:10px;color:var(--mu);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+
+.story-ctx-inline{
+  flex:1 1 8rem;min-width:0;margin-left:auto;padding-left:.5rem;
+  font-size:9px;font-family:'Space Mono',monospace;color:var(--di);letter-spacing:.02em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;
+}
+.story-ctx-inline:empty{display:none}
+
+.list-chapter{
+  padding:5px 16px 3px;border-bottom:.5px solid var(--b0);
+  position:sticky;top:0;z-index:2;background:var(--s1);
+}
+.list-chapter-name{font-size:9px;font-weight:500;color:var(--ch-c,#888);font-family:'Space Mono',monospace;letter-spacing:.06em;text-transform:uppercase}
+
+.fbar{display:flex;gap:5px;padding:.85rem 2rem;border-bottom:.5px solid var(--b0);flex-wrap:wrap;align-items:center}
+.flbl{font-size:10px;color:var(--di);letter-spacing:.1em;text-transform:uppercase;font-family:'Space Mono',monospace;margin-right:4px;flex-shrink:0}
+.fb{font-size:11px;font-family:'Space Mono',monospace;padding:4px 12px;border-radius:2px;border:.5px solid var(--b1);background:transparent;color:var(--mu);cursor:pointer;transition:all .12s;letter-spacing:.03em;white-space:nowrap}
+.fb:hover{color:var(--tx);border-color:var(--b2)}
+.fb.on{font-weight:700;color:#080808}
+[data-s=all].on{background:var(--tx);border-color:var(--tx)}
+[data-s=cuboid].on{background:var(--cuboid);border-color:var(--cuboid)}
+[data-s=sphere].on{background:var(--sphere);border-color:var(--sphere)}
+[data-s=tetra].on{background:var(--tetra);border-color:var(--tetra)}
+[data-s=poly].on{background:var(--poly);border-color:var(--poly);color:var(--tx)}
+[data-s=pip].on{background:var(--pip);border-color:var(--pip)}
+
+.sbar{padding:.6rem 2rem;border-bottom:.5px solid var(--b0);display:flex;flex-direction:column;gap:6px}
+.sbar-main{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.sbar-q{font-size:11px;font-family:'DM Sans',sans-serif;padding:6px 10px;border-radius:2px;border:.5px solid var(--b1);background:var(--s1);color:var(--tx);min-width:120px;flex:1}
+.sbar-q::placeholder{color:var(--di)}
+.sbar-q:focus{outline:none;border-color:var(--b2)}
+.sbar-count{font-size:9px;color:var(--di);font-family:'Space Mono',monospace;flex-shrink:0;white-space:nowrap}
+.ctl{font-size:10px;font-family:'Space Mono',monospace;padding:5px 11px;border-radius:2px;border:.5px solid var(--b1);background:transparent;color:var(--mu);cursor:pointer;transition:all .12s;letter-spacing:.02em;white-space:nowrap}
+.ctl:hover{color:var(--tx);border-color:var(--b2)}
+.ctl.open{font-weight:700;color:#080808;background:var(--tx);border-color:var(--tx)}
+.ctl.has-filt:not(.open){font-weight:700;color:var(--tx);border-color:var(--b2);background:rgba(255,255,255,.06)}
+.dd-wrap{position:relative;flex-shrink:0}
+.dd-menu{
+  position:absolute;top:calc(100% + 4px);right:0;min-width:168px;z-index:50;
+  background:var(--s1);border:.5px solid var(--b1);border-radius:3px;padding:4px;
+  box-shadow:0 8px 28px rgba(0,0,0,.55);
+}
+.dd-menu[hidden]{display:none}
+.dd-item{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;
+  font-size:10px;font-family:'Space Mono',monospace;padding:6px 10px;border-radius:2px;
+  border:0;background:transparent;color:var(--mu);cursor:pointer;text-align:left;letter-spacing:.02em;
+}
+.dd-item:hover{color:var(--tx);background:var(--s2)}
+.dd-item.on{color:var(--tx);font-weight:700}
+.dd-item.on[data-sort="scf"],.dd-item.on[data-sort="scp"]{color:#ff9a5c}
+.dd-arr{font-size:8px;opacity:.75}
+.refine-panel{
+  position:absolute;top:calc(100% + 4px);right:0;width:min(240px,calc(100vw - 2rem));z-index:50;
+  background:var(--s1);border:.5px solid var(--b1);border-radius:3px;padding:.55rem .6rem;
+  box-shadow:0 8px 28px rgba(0,0,0,.55);
+  display:flex;flex-direction:column;gap:7px;
+}
+.refine-panel[hidden]{display:none}
+.refine-chips{display:flex;gap:4px;flex-wrap:wrap}
+.refine-select{
+  width:100%;font-size:10px;font-family:'Space Mono',monospace;padding:5px 8px;border-radius:2px;
+  border:.5px solid var(--b1);background:var(--s2);color:var(--tx);cursor:pointer;
+}
+.refine-select:focus{outline:none;border-color:var(--b2)}
+.ft{font-size:10px;font-family:'Space Mono',monospace;padding:4px 9px;border-radius:2px;border:.5px solid var(--b1);background:transparent;color:var(--mu);cursor:pointer;transition:all .12s;letter-spacing:.02em;white-space:nowrap}
+.ft:hover{color:var(--tx);border-color:var(--b2)}
+.ft.on{font-weight:700;color:#080808}
+.ft.on[data-t="hl"]{background:rgba(123,111,232,.85);border-color:rgba(123,111,232,.85)}
+.ft.on[data-t="live"]{background:rgba(61,184,138,.85);border-color:rgba(61,184,138,.85)}
+.ft.on[data-t="warm"]{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.35);color:var(--tx)}
+.ft.on[data-t="local"]{background:rgba(212,153,42,.85);border-color:rgba(212,153,42,.85)}
+.ft.on[data-t="sc"]{background:#ff5500;border-color:#ff5500}
+.gf.on,.gx.on{font-weight:700;color:#080808;background:var(--tx);border-color:var(--tx)}
+.chipbar{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
+.chipbar[hidden]{display:none}
+.chip{
+  font-size:9px;font-family:'Space Mono',monospace;padding:3px 8px;border-radius:2px;
+  border:.5px solid var(--b1);background:var(--s2);color:var(--tx);cursor:pointer;letter-spacing:.02em;
+}
+.chip:hover{border-color:var(--b2)}
+.chip-x{opacity:.45;margin-left:4px}
+.chip-clear{font-size:9px;font-family:'Space Mono',monospace;padding:3px 7px;border:0;background:transparent;color:var(--mu);cursor:pointer;letter-spacing:.03em}
+.chip-clear:hover{color:var(--tx)}
+.ai-stat{font-size:9px;font-family:'Space Mono',monospace;flex-shrink:0;text-align:right;line-height:1.35;min-width:42px}
+.ai-stat-val{display:block;font-weight:500}
+.ai-stat-lbl{font-size:8px;color:var(--di);letter-spacing:.04em}
+
+.layout{display:grid;grid-template-columns:300px 1fr;grid-template-rows:1fr;height:calc(100vh - var(--top-chrome) - var(--player-h))}
+.col-list{grid-column:1;grid-row:1;border-right:.5px solid var(--b0);overflow-y:auto;min-height:0}
+.col-detail{grid-column:2;grid-row:1;overflow-y:auto;padding:1.75rem 2rem 2rem;min-height:0}
+.split-handle{display:none}
+
+.ai{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:.5px solid var(--b0);cursor:pointer;transition:background .1s;border-left:3px solid transparent}
+.ai:hover{background:var(--s2)}
+.ai.on{background:var(--s2)}
+.av,.dav,.plist img{width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--s2)}
+.av,.dav{display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:0}
+.ai-info{flex:1;min-width:0}
+.ai-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+.ai-slot{font-size:9px;color:var(--mu);margin-top:2px;font-family:'Space Mono',monospace}
+.ai-tags{display:flex;gap:3px;margin-top:4px;flex-wrap:wrap}
+.t{font-size:9px;padding:1px 6px;border-radius:2px;font-family:'Space Mono',monospace;letter-spacing:.02em}
+.tw{background:rgba(255,255,255,.04);color:var(--di);border:.5px solid var(--b0)}
+.tl{background:rgba(61,184,138,.12);color:#4ECFA1;border:.5px solid rgba(61,184,138,.25)}
+.th{background:rgba(123,111,232,.12);color:#A09AEF;border:.5px solid rgba(123,111,232,.25)}
+.tn{background:rgba(212,153,42,.12);color:#D4992A;border:.5px solid rgba(212,153,42,.25)}
+
+.empty{display:flex;align-items:center;justify-content:center;height:100%;color:var(--di);font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.06em;flex-direction:column;gap:8px;text-align:center;padding:2rem}
+
+.detail-head{
+  display:flex;align-items:flex-start;gap:1.25rem;
+  margin-bottom:1.25rem;padding:1.1rem 1.15rem;
+  background:var(--s1);border:.5px solid var(--b0);border-radius:8px;
+  border-left:3px solid var(--stage-accent,var(--b1));
+}
+.detail-av-col{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:8px}
+.detail-av{width:80px;height:80px;border-radius:8px;overflow:hidden;background:var(--s2);box-shadow:0 4px 20px rgba(0,0,0,.35)}
+.detail-av img,.detail-av .hero-img{width:100%;height:100%;object-fit:cover;display:block;border-radius:8px}
+.detail-av .hero-img.fallback{width:100%;height:100%;min-height:80px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;font-family:'Space Mono',monospace}
+.detail-body{flex:1;min-width:0;padding-top:2px}
+.detail-name{font-size:22px;font-weight:500;line-height:1.15;margin:0 0 5px;letter-spacing:-.2px}
+.detail-origin{font-size:12px;color:var(--mu);margin:0 0 10px}
+.detail-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.detail-pill{font-size:10px;padding:4px 10px;border-radius:2px;font-family:'Space Mono',monospace;font-weight:700;letter-spacing:.03em}
+.detail-row .ai-tags{margin-top:0}
+.detail-metrics{display:flex;gap:18px;flex-shrink:0;align-self:center;padding-left:.5rem}
+.detail-metrics .ai-stat{min-width:46px}
+.detail-metrics .ai-stat-val{font-size:15px;font-weight:500}
+.photo-strip{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
+.pthumb{width:36px;height:36px;border-radius:4px;object-fit:cover;cursor:pointer;border:2px solid transparent;opacity:.55;transition:opacity .12s,border-color .12s}
+.pthumb:hover,.pthumb.on{opacity:1;border-color:var(--b2)}
+
+.genres{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:1.1rem}
+.gc{font-size:10px;padding:3px 8px;border-radius:2px;border:.5px solid var(--b1);color:var(--mu);font-family:'Space Mono',monospace;background:transparent;cursor:pointer;transition:color .12s,border-color .12s,background .12s}
+.gc:hover{color:var(--tx);border-color:var(--b2)}
+.gc.on{color:#080808;background:var(--tx);border-color:var(--tx);font-weight:700}
+
+.sc-hero{background:linear-gradient(135deg,rgba(255,85,0,.14) 0%,var(--s1) 52%);border:.5px solid rgba(255,85,0,.42);border-radius:6px;padding:1rem 1.1rem;margin-bottom:1rem}
+.sc-hero-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;gap:.5rem;flex-wrap:wrap}
+.sc-brand{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#ff5500;letter-spacing:.07em;text-transform:uppercase}
+.sc-profile-link{font-size:11px;color:var(--mu);text-decoration:none;font-family:'Space Mono',monospace}
+.sc-profile-link:hover{color:#ff5500}
+.sc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,85,0,.22);border-radius:4px;overflow:hidden;margin-bottom:.6rem}
+.sc-cell{background:rgba(8,8,8,.58);padding:10px 8px;text-align:center}
+.sc-cell .sl{color:rgba(255,255,255,.42)}
+.sc-cell .sv{color:#ff9a5c;font-size:19px}
+.sc-cell--lead .sv{font-size:26px;color:#ff5500}
+.sc-top{grid-column:1/-1;text-align:left;padding:10px 12px;background:rgba(8,8,8,.58);display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.sc-top-lbl{font-size:9px;font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);flex-shrink:0}
+.sc-top-title{font-size:12px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc-top-plays{font-family:'Space Mono',monospace;font-size:12px;color:#ff5500;flex-shrink:0}
+.sc-compare{font-size:11px;line-height:1.55;color:#c8c4bc;font-family:'Space Mono',monospace}
+.sc-footnote{font-size:9px;color:var(--di);font-family:'Space Mono',monospace;margin-top:6px;letter-spacing:.03em}
+.stats-row{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--b0);border-radius:4px;overflow:hidden;margin-bottom:1.1rem}
+.stats-row .sc{padding:9px 8px}
+.stats-row .sl{font-size:8px;letter-spacing:.06em}
+.stats-row .sv{font-size:14px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--b0);border-radius:4px;overflow:hidden;margin-bottom:1.1rem}
+.sc{background:var(--s1);padding:11px 12px;text-align:center}
+.trk-p{font-size:10px;color:rgba(255,154,92,.9);font-family:'Space Mono',monospace;flex-shrink:0}
+.sl{font-size:9px;font-family:'Space Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--mu);margin-bottom:4px}
+.sv{font-size:18px;font-weight:500;font-family:'Space Mono',monospace;line-height:1}
+.sbars{display:flex;justify-content:center;gap:2px;margin-top:5px}
+.sb{width:12px;height:3px;border-radius:1px}
+.sn{font-size:10px;color:var(--di);margin-top:4px;line-height:1.45}
+.sec{font-size:9px;font-family:'Space Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--di);margin-bottom:7px}
+.sec-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;flex-wrap:wrap}
+.trk-sort{display:flex;gap:4px;flex-wrap:wrap}
+.tsrt{font-size:9px;font-family:'Space Mono',monospace;padding:2px 8px;border-radius:2px;border:.5px solid var(--b1);background:transparent;color:var(--mu);cursor:pointer}
+.tsrt:hover{color:var(--tx);border-color:var(--b2)}
+.tsrt.on{color:#ff5500;border-color:rgba(255,85,0,.5);font-weight:700}
+.bio{font-size:13px;line-height:1.8;color:#c5c5c5;margin-bottom:1.25rem}
+
+.tracks{display:flex;flex-direction:column;gap:4px;margin-bottom:1.1rem;max-height:220px;overflow-y:auto}
+.trk{display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--s1);border:.5px solid var(--b0);border-radius:3px;cursor:pointer;text-align:left;width:100%;color:var(--tx);font-family:inherit;font-size:12px;transition:background .1s,border-color .1s}
+.trk:hover{background:var(--s2);border-color:var(--b1)}
+.trk.on{background:var(--s2);border-color:var(--b2)}
+.trk-n{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trk-d{font-size:10px;color:var(--di);font-family:'Space Mono',monospace;flex-shrink:0}
+.trk-load{font-size:11px;color:var(--di);padding:8px;font-family:'Space Mono',monospace}
+.trk.off{opacity:.45}
+.trk-ext{font-size:10px;color:var(--mu);flex-shrink:0;padding:2px 6px;border:.5px solid var(--b0);border-radius:2px;text-decoration:none}
+.trk-ext:hover{color:var(--tx);border-color:var(--b1)}
+.sc-note{font-size:11px;color:var(--tetra);margin:-4px 0 10px;line-height:1.45;font-family:'Space Mono',monospace}
+
+/* ── listen hub (primary media) ── */
+.listen{
+  --accent:var(--listen-accent,#888);
+  margin-bottom:1.35rem;
+  border:.5px solid var(--b1);
+  border-radius:8px;
+  background:linear-gradient(165deg,color-mix(in srgb,var(--accent) 14%,transparent) 0%,var(--s1) 42%,var(--bg) 100%);
+  overflow:hidden;
+}
+.listen-hdr{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:.85rem 1rem;border-bottom:.5px solid var(--b0);flex-wrap:wrap;
+}
+.listen-title{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+.listen-tabs{display:flex;gap:4px}
+.listen-tab{
+  font-size:10px;font-family:'Space Mono',monospace;padding:6px 14px;border-radius:3px;
+  border:.5px solid var(--b1);background:rgba(0,0,0,.25);color:var(--mu);cursor:pointer;transition:all .12s;
+}
+.listen-tab:hover{color:var(--tx);border-color:var(--b2)}
+.listen-tab.on{font-weight:700;color:#080808;border-color:transparent}
+.listen-tab[data-tab="yt"].on{background:var(--yt)}
+.listen-tab[data-tab="sc"].on{background:var(--sc)}
+.listen-body{padding:1rem}
+.listen-panel{display:none}
+.listen-panel.on{display:grid;grid-template-columns:minmax(0,1fr) minmax(200px,280px);gap:1rem;align-items:start}
+.listen-stage{
+  border-radius:6px;overflow:hidden;background:#000;border:.5px solid var(--b0);
+  aspect-ratio:16/9;min-height:180px;position:relative;
+}
+.listen-stage--sc{aspect-ratio:auto;min-height:0}
+.listen-sc-embed iframe{display:block;width:100%;border:0;height:152px}
+.listen-player iframe{display:block;width:100%;height:100%;border:0;position:absolute;inset:0}
+.listen-player:not(:has(iframe)){display:flex;align-items:center;justify-content:center;padding:1.5rem;text-align:center}
+.listen-queue{display:flex;flex-direction:column;gap:4px;max-height:min(340px,50vh);overflow-y:auto}
+.listen-queue-hdr{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.listen-queue-hdr .sec{margin:0}
+.listen-hint{
+  font-size:9px;color:var(--di);font-family:'Space Mono',monospace;letter-spacing:.04em;
+  padding:.55rem 1rem;border-top:.5px solid var(--b0);text-align:center;
+}
+.q-item{
+  display:flex;align-items:center;gap:10px;padding:9px 10px;background:rgba(0,0,0,.35);
+  border:.5px solid var(--b0);border-radius:4px;cursor:pointer;text-align:left;width:100%;
+  color:var(--tx);font-family:inherit;font-size:12px;transition:background .12s,border-color .12s,box-shadow .12s;
+}
+.q-item:hover{background:var(--s2);border-color:var(--b1)}
+.q-item.on{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent);background:var(--s2)}
+.q-item-n{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.35}
+.q-item-m{font-size:10px;color:var(--di);font-family:'Space Mono',monospace;flex-shrink:0}
+.q-item.off{opacity:.45}
+.listen-empty{font-size:11px;color:var(--di);padding:1rem;font-family:'Space Mono',monospace}
+.yt-open{display:inline-block;margin-top:8px;font-size:11px;font-family:'Space Mono',monospace;color:var(--mu);text-decoration:none}
+.yt-open:hover{color:var(--yt)}
+
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem 1.25rem;margin-bottom:1.25rem}
+.detail-card{background:var(--s1);border:.5px solid var(--b0);border-radius:6px;padding:1rem 1.1rem}
+.detail-card .sec{margin-bottom:.65rem}
+.detail-card .bio{margin:0;font-size:13px;line-height:1.75}
+.detail-card .links{margin:0}
+
+.links{display:flex;flex-direction:column;gap:5px}
+.lk{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--s1);border:.5px solid var(--b0);border-radius:3px;text-decoration:none;color:var(--tx);transition:background .1s,border-color .1s}
+.lk:hover{background:var(--s2);border-color:var(--b1)}
+.lk-ico{font-size:15px;color:var(--mu);flex-shrink:0;width:18px;text-align:center;font-family:'Space Mono',monospace;font-weight:700}
+.lk-t{flex:1}
+.lk-label{font-size:12px;font-weight:500}
+.lk-sub{font-size:11px;color:var(--mu);margin-top:1px}
+.lk-arr{color:var(--di);font-size:11px}
+
+/* player bar */
+.player{
+  position:fixed;left:0;right:0;bottom:0;min-height:var(--player-h);
+  background:linear-gradient(180deg,#121212 0%,#0a0a0a 100%);
+  border-top:.5px solid var(--b1);display:flex;align-items:center;gap:10px;
+  padding:10px 1.25rem;z-index:100;box-sizing:border-box;
+}
+.pnav{display:flex;gap:4px;flex-shrink:0}
+.pbtn{width:36px;height:36px;border-radius:50%;border:.5px solid var(--b1);background:var(--s1);color:var(--tx);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .12s}
+.pbtn:hover:not(:disabled){border-color:var(--b2);background:var(--s2)}
+.pbtn:disabled{opacity:.25;cursor:default}
+.pplay{width:44px;height:44px;font-size:17px;border-color:var(--b2)}
+.pinfo{
+  flex:1 1 0;min-width:0;
+  display:grid;grid-template-columns:48px minmax(0,1fr);column-gap:12px;align-items:start;
+  overflow:hidden;
+}
+.pthumb-sm{
+  grid-column:1;grid-row:1;
+  width:48px;height:48px;border-radius:6px;
+  background:var(--s2);overflow:hidden;
+}
+.pthumb-sm img{display:block;width:100%;height:100%;object-fit:cover}
+.pthumb-sm.fallback{
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-family:'Space Mono',monospace;font-weight:700;
+}
+.pinfo-text{grid-column:2;grid-row:1;min-width:0;overflow:hidden}
+.ptitle{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25}
+.psub{font-size:10px;color:var(--mu);font-family:'Space Mono',monospace;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+.pnow{display:flex;align-items:center;gap:8px;margin-top:4px;min-width:0;max-width:100%}
+.psrc{
+  font-size:8px;font-family:'Space Mono',monospace;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  padding:2px 6px;border-radius:2px;flex-shrink:0;
+}
+.psrc--yt{background:rgba(255,59,48,.2);color:#ff6b63}
+.psrc--sc{background:rgba(255,85,0,.2);color:#ff9a5c}
+.psrc--idle{background:var(--s2);color:var(--di)}
+.ptrk{font-size:11px;color:#c8c4bc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--di);border-radius:2px}
+
+/* ── phone / small tablet (desktop unchanged above 768px) ── */
+@media(max-width:768px){
+  :root{--player-h:96px;--chrome:168px;--top-chrome:168px}
+  body{
+    padding-bottom:calc(var(--player-h) + env(safe-area-inset-bottom,0px));
+    -webkit-text-size-adjust:100%;
+  }
+  .hdr{padding:.85rem 1rem .5rem}
+  .hdr-title{font-size:15px}
+  .hdr-sub{font-size:8px}
+  .story-ctx-inline{font-size:8px;flex-basis:100%;text-align:left;margin:2px 0 0;padding-left:0}
+
+  .fbar{
+    padding:.6rem 1rem;
+    gap:6px;
+    overflow-x:auto;
+    flex-wrap:nowrap;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .fbar::-webkit-scrollbar{display:none}
+  .flbl{margin-right:2px}
+  .fb{flex-shrink:0;padding:7px 13px;min-height:36px;font-size:10px}
+  .sbar{padding:.5rem 1rem;gap:5px}
+  .sbar-main{flex-wrap:nowrap}
+  .sbar-q{min-width:0;flex:1 1 120px}
+  .ctl{padding:6px 10px;font-size:9px;flex-shrink:0}
+  .refine-panel{right:0;left:auto;width:min(300px,calc(100vw - 1.5rem))}
+  .dd-menu{right:0}
+
+  .layout{
+    display:flex;
+    flex-direction:column;
+    height:calc(100dvh - var(--chrome) - var(--player-h) - env(safe-area-inset-bottom,0px));
+    min-height:320px;
+    --split-list-px:200px;
+  }
+  .layout.split-animate .col-list{transition:flex-basis .28s cubic-bezier(.4,0,.2,1)}
+  .layout.split-dragging .col-list{transition:none}
+  .col-list{
+    grid-column:unset;grid-row:unset;
+    flex:0 0 var(--split-list-px);
+    min-height:72px;
+    max-height:72%;
+    border-right:none;
+    border-bottom:none;
+    -webkit-overflow-scrolling:touch;
+  }
+  .split-handle{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+    height:32px;
+    touch-action:none;
+    cursor:grab;
+    user-select:none;
+    background:var(--s1);
+    border-top:.5px solid var(--b0);
+    border-bottom:.5px solid var(--b0);
+  }
+  .split-handle::before{
+    content:'';
+    width:40px;height:4px;border-radius:2px;
+    background:var(--b2);
+    box-shadow:0 6px 0 var(--b1);
+  }
+  .split-handle:active{cursor:grabbing}
+  .col-detail{
+    grid-column:unset;grid-row:unset;
+    flex:1 1 0;
+    min-height:96px;
+    padding:1.15rem 1rem 1.5rem;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  .ai{padding:13px 1rem;min-height:52px}
+  .ai-name{font-size:14px}
+  .empty{padding:1.5rem 1rem;font-size:11px}
+
+  .detail-head{gap:1rem;padding:.95rem 1rem;margin-bottom:1rem}
+  .detail-av{width:64px;height:64px}
+  .detail-av .hero-img.fallback{min-height:64px;font-size:20px}
+  .detail-name{font-size:19px}
+  .detail-metrics{align-self:flex-start;padding-left:0;padding-top:2px}
+  .detail-metrics .ai-stat-val{font-size:14px}
+
+  .sc-hero{padding:.9rem}
+  .sc-grid{grid-template-columns:repeat(2,1fr)}
+  .sc-cell--lead{grid-column:span 2}
+  .sc-cell--lead .sv{font-size:22px}
+  .sc-cell .sv{font-size:16px}
+  .stats-row{margin-bottom:.9rem}
+  .stats-row .sc{padding:8px 5px}
+  .stats{margin-bottom:.9rem}
+  .sc{padding:9px 6px}
+  .sl{font-size:8px;letter-spacing:.06em}
+  .sv{font-size:15px}
+  .sb{width:10px}
+
+  .bio{font-size:12.5px;line-height:1.75}
+  .listen-panel.on{grid-template-columns:1fr;gap:.85rem}
+  .listen-queue{max-height:200px}
+  .listen-stage{min-height:160px}
+  .detail-grid{grid-template-columns:1fr}
+  .tracks{max-height:160px}
+  .q-item{padding:11px 12px;min-height:44px}
+  .lk{padding:12px;min-height:48px}
+
+  .player{
+    height:auto;
+    min-height:var(--player-h);
+    flex-wrap:wrap;
+    align-content:center;
+    gap:6px 8px;
+    padding:8px 10px;
+    padding-bottom:calc(8px + env(safe-area-inset-bottom,0px));
+  }
+  .pinfo{
+    order:-1;
+    flex:1 1 100%;
+    width:100%;
+    max-width:100%;
+    grid-template-columns:40px minmax(0,1fr);
+    column-gap:10px;
+    padding-bottom:6px;
+    margin-bottom:2px;
+    border-bottom:.5px solid var(--b0);
+  }
+  .pnav{gap:5px}
+  .pbtn{width:44px;height:44px;font-size:15px}
+  .pplay{width:48px;height:48px;font-size:17px}
+  .pthumb-sm{width:40px;height:40px}
+  .ptitle{font-size:12px}
+  .psub{font-size:9px}
+  .ai:active,.fb:active,.trk:active,.lk:active{opacity:.92}
+  .pbtn:active:not(:disabled){transform:scale(.96)}
+}
+
+@media(max-width:380px){
+  :root{--chrome:152px}
+  .sbar-count{display:none}
+  .detail-head{flex-wrap:wrap}
+  .detail-metrics{width:100%;padding-top:6px;gap:14px}
+  .detail-av{width:56px;height:56px}
+  .detail-av .hero-img.fallback{min-height:56px;font-size:18px}
+  .sc-grid{grid-template-columns:1fr 1fr}
+  .sc-cell--lead{grid-column:span 2}
+  .stats-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .sl{font-size:7px}
+  .sv{font-size:13px}
+  .player{justify-content:center}
+  .pinfo .psub{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="topChrome">
+<header class="hdr">
+  <div class="hdr-title">The Crave Festival 2026</div>
+  <div class="hdr-sub">06 June · Zuiderpark · 38 artists</div>
+</header>
+
+<div class="fbar">
+  <span class="flbl">Stage</span>
+  <button class="fb on" data-s="all"    onclick="go('all',this)" title="All stages · festival order">All</button>
+  <button class="fb"    data-s="cuboid" onclick="go('cuboid',this)" title="Leftfield → live → Detroit close">Cuboid</button>
+  <button class="fb"    data-s="sphere" onclick="go('sphere',this)" title="House → trance → UK garage">Sphere</button>
+  <button class="fb"    data-s="tetra"  onclick="go('tetra',this)" title="Warehouse · Daria Kolosova">Tetra</button>
+  <button class="fb"    data-s="poly"   onclick="go('poly',this)" title="UK bass → Dozzy">Poly</button>
+  <button class="fb"    data-s="pip"    onclick="go('pip',this)" title="Disco → CARISTA close">PIP</button>
+  <span class="story-ctx-inline" id="storyCtx"></span>
+</div>
+
+<div class="sbar" id="sbar">
+  <div class="sbar-main">
+    <input type="search" class="sbar-q" id="qSearch" placeholder="Search name, genre, city…" autocomplete="off" oninput="setSearch(this.value)">
+    <div class="dd-wrap" id="sortWrap">
+      <button type="button" class="ctl" id="sortBtn" aria-expanded="false" aria-haspopup="listbox" onclick="toggleSortMenu(event)">Sort</button>
+      <div class="dd-menu" id="sortMenu" role="listbox" hidden>
+        <button type="button" class="dd-item on" data-sort="lineup" onclick="pickSort('lineup')">Lineup</button>
+        <button type="button" class="dd-item" data-sort="scf" onclick="pickSort('scf')">SC followers</button>
+        <button type="button" class="dd-item" data-sort="scp" onclick="pickSort('scp')">SC plays</button>
+        <button type="button" class="dd-item" data-sort="ra" onclick="pickSort('ra')">RA</button>
+        <button type="button" class="dd-item" data-sort="ig" onclick="pickSort('ig')">Instagram</button>
+        <button type="button" class="dd-item" data-sort="name" onclick="pickSort('name')">Name</button>
+      </div>
+    </div>
+    <div class="dd-wrap" id="refineWrap">
+      <button type="button" class="ctl" id="refineBtn" aria-expanded="false" onclick="toggleRefine(event)">Refine</button>
+      <div class="refine-panel" id="refinePanel" hidden>
+        <div class="refine-chips" id="refineTagChips">
+          <button type="button" class="ft" data-t="hl" onclick="setTag('hl',this)">Headliner</button>
+          <button type="button" class="ft" data-t="live" onclick="setTag('live',this)">Live</button>
+          <button type="button" class="ft" data-t="warm" onclick="setTag('warm',this)">Warm-up</button>
+          <button type="button" class="ft" data-t="local" onclick="setTag('local',this)">NL</button>
+          <button type="button" class="ft" data-t="sc" onclick="setTag('sc',this)">SC</button>
+        </div>
+        <select class="refine-select" id="genreSelect" aria-label="Filter by genre" onchange="onGenreSelect(this)">
+          <option value="">All genres</option>
+        </select>
+      </div>
+    </div>
+    <span class="sbar-count" id="listCount"></span>
+  </div>
+  <div class="chipbar" id="chipbar" hidden></div>
+</div>
+</div>
+
+<div class="layout" id="layout">
+  <div class="col-list" id="list"></div>
+  <div class="split-handle" id="splitHandle" role="separator" aria-label="Drag to resize panels"></div>
+  <div class="col-detail" id="detail"></div>
+</div>
+
+<div class="player" id="player">
+  <div class="pnav">
+    <button class="pbtn" id="btnPrevA" title="Previous artist (←)" onclick="navArtist(-1)">‹</button>
+    <button class="pbtn pplay" id="btnPlay" title="Play / pause (Space)" onclick="togglePlay()">▶</button>
+    <button class="pbtn" id="btnNextA" title="Next artist (→)" onclick="navArtist(1)">›</button>
+  </div>
+  <div class="pnav">
+    <button class="pbtn" id="btnPrevT" title="Previous track" onclick="navTrack(-1)">⏮</button>
+    <button class="pbtn" id="btnNextT" title="Next track" onclick="navTrack(1)">⏭</button>
+  </div>
+  <div class="pinfo" id="playerInfo">
+    <div class="pthumb-sm fallback" id="playerThumb">?</div>
+    <div class="pinfo-text">
+      <div class="ptitle" id="playerTitle"></div>
+      <div class="psub" id="playerSub"></div>
+      <div class="pnow">
+        <span class="psrc psrc--idle" id="playerSource">Ready</span>
+        <span class="ptrk" id="playerTrack">Select a video or track</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://w.soundcloud.com/player/api.js"></script>
+<script>
+const ST={
+  cuboid:{c:'#7B6FE8',n:'Cuboid'},
+  sphere:{c:'#3DB88A',n:'Sphere'},
+  tetra: {c:'#E8784A',n:'Tetra'},
+  poly:  {c:'#9E9E99',n:'Poly'},
+  pip:   {c:'#D4992A',n:'PIP'},
+};
+
+const STAGE_ORDER=['cuboid','sphere','tetra','poly','pip'];
+
+const STORY={
+  intro:{
+    title:'One day, five rooms',
+    lede:'The Crave is not a random pile of names — it is a single arc from midday sun to midnight, told in parallel across Zuiderpark.',
+    body:'Pick a chapter below to read how that stage builds across twelve hours, then click any artist in the list to listen, compare stats, and follow the threads that tie the bill together. The full-day view groups the lineup in festival order so you can walk the site in time.',
+    threads:[
+      'CARISTA closes PIP at 21:30 — Mary Lake, her United Identities signing, opens Cuboid at 12:00.',
+      'Donato Dozzy plays Voices From The Lake live on Cuboid at 16:30, then closes Poly as a DJ at 21:00.',
+      'Benwal headlines Sphere; DJ sweet6teen has shared the booth with him — energy crosses stages.',
+      'Daria Kolosova hosts Tetra for the fourth time; Chlär b2b Stranger brings Rotterdam back into the warehouse.',
+    ],
+  },
+  chapters:{
+    cuboid:{
+      act:'Act I · Main stage',
+      when:'12:00 – 23:30',
+      tagline:'Leftfield open → live mythology → Detroit close',
+      lede:'Cuboid is the flagship — the story the whole festival orbits. Programming moves deliberately from warm Amsterdam electro into Berlin hardware, then a rare double live block, before peak-time vinyl techno and a historical Detroit closer.',
+      body:'Afternoon is for discovery and live spectacle; evening is for weight. If you only follow one arc all day, make it this one.',
+      arc:[
+        ['12:00','Mary Lake — NL leftfield opener, CARISTA\'s universe'],
+        ['14:30','JakoJako — modular bridge into the live block'],
+        ['16:30','Voices From The Lake (live) — Dozzy & Neel, meditative peak'],
+        ['18:30','Yanamaste (live) — hardware golden hour'],
+        ['19:30','Freddy K b2b Setaoc Mass — vinyl peak time'],
+        ['21:30','Robert Hood — Detroit spiritual close'],
+      ],
+      picks:['maryk','vtl','fredky','rhood'],
+    },
+    sphere:{
+      act:'Act II · The circle',
+      when:'12:00 – 23:30',
+      tagline:'House → acid → trance revival → UK garage',
+      lede:'Sphere traces a circle through dancefloor genres: Dutch and UK house at lunch, acid and breakbeat in the afternoon, then the Dutch trance revival at sunset and high-velocity techno before salute\'s bittersweet UK garage finale.',
+      body:'Where Cuboid leans spiritual techno, Sphere stays festival-euphoric — hands up, forward motion, zero apology.',
+      arc:[
+        ['12:00','Kyra Khaldi — Amsterdam electro-house open'],
+        ['14:00','Spray — hyper-electronic rave pop'],
+        ['16:00','Sally C — Panorama Bar acid & breakbeat'],
+        ['18:00','Benwal — trance & hard house headliner'],
+        ['19:30','X CLUB. — peak velocity'],
+        ['21:30','salute — Ninja Tune garage close'],
+      ],
+      picks:['benwal','sallc','xclub','salute'],
+    },
+    tetra:{
+      act:'Act III · The warehouse',
+      when:'12:00 – 23:30 · hosted by Daria Kolosova',
+      tagline:'Contest → hard techno → live KiNK → industrial peak',
+      lede:'Tetra is the enclosed room — darkness, sub pressure, and Daria Kolosova as its fourth-time host. Bud opens with local talent; the afternoon brings hard techno and a rare KiNK live hybrid; evening is Berghain-adjacent selectors and a Rotterdam b2b before Daria\'s closing sermon.',
+      body:'This is the stage people enter specifically for 21:30. Everything before it is the climb.',
+      arc:[
+        ['12:00','Bud DJ Contest — Hague talent on Daria\'s floor'],
+        ['14:00','ÜBERKIKZ — hard techno after the open'],
+        ['15:30','KiNK & Raredub — live hardware inside the warehouse'],
+        ['17:30','Philippa Pacho — Berghain fluidity'],
+        ['19:30','Chlär b2b Stranger (NL) — industrial × local soul'],
+        ['21:30','Daria Kolosova — she is Tetra at Crave'],
+      ],
+      picks:['kink','phpacho','chlstr','dkolo'],
+    },
+    poly:{
+      act:'Act IV · Leftfield',
+      when:'12:30 – 23:30',
+      tagline:'UK bass → rare live acts → jungle precision → Dozzy DJ',
+      lede:'Poly is where Crave gets weird in the best way: psychedelic breaks, Livity dub-jungle, two unmissable live hours (Spekki Webu, µ-Ziq), then industrial weight, DjRUM\'s forensic mashups, and Donato Dozzy\'s hypnotic DJ close.',
+      body:'You already heard Dozzy as Voices From The Lake on Cuboid — Poly is the other half of his day.',
+      arc:[
+        ['12:30','Sybil — psychedelic UK open'],
+        ['14:00','Forest Drive West — Livity dub & jungle'],
+        ['16:00','Spekki Webu (live) — Dutch trance hardware'],
+        ['17:00','µ-Ziq (live) — IDM pioneer, genuinely rare'],
+        ['18:00','Darwin — Berghain industrial pressure'],
+        ['19:30','DjRUM — jungle, gabber, broken beat'],
+        ['21:00','Donato Dozzy — marathon hypnotic close'],
+      ],
+      picks:['uziq','djrum','fdw','dozzy'],
+    },
+    pip:{
+      act:'Act V · Creative hub',
+      when:'13:00 – 23:30',
+      tagline:'Disco sun → acid gold → soulful house close',
+      lede:'PIP is The Hague creative-hub energy — welcoming afternoon disco and house, darkening into acid and leftfield abstraction, then Oceanic and Kia lifting the room before CARISTA closes the festival where the story began.',
+      body:'Start here if you want warmth; stay for the full-circle moment when the woman who launched Mary Lake ends the night.',
+      arc:[
+        ['13:00','Jetti — groovy Amsterdam disco open'],
+        ['15:00','DJ sweet6teen — dark Phantasy energy'],
+        ['17:00','Rey Colino — Kalahari Oyster Cult acid'],
+        ['18:30','Oceanic — melodic evening lift'],
+        ['19:30','Kia — NTS soulful house'],
+        ['21:30','CARISTA — United Identities, full circle'],
+      ],
+      picks:['reyco','oceanic','carista','jetti'],
+    },
+  },
+};
+
+const A=[
+
+// ── Cuboid (lineup order) ──────────────────────────────────────────
+{id:'maryk', stage:'cuboid', slot:'12:00–14:30',
+ name:'Mary Lake', origin:'Amsterdam, NL',
+ warm:true,live:false,hl:false,local:true,
+ genres:['Electro','Techno','Leftfield'],
+ ra:696, ra_c:true, ra_n:'Confirmed via ra.co (Mary Lake (696)).',
+ ig:3000, ig_c:false, ig_n:'~3K estimated. Small but engaged Amsterdam underground following.',
+ sc:'marylakeworld',
+ img:'https://i1.sndcdn.com/avatars-3B9o1rQ8s8ibP7Ro-jDsYDA-large.jpg', ig_h:'marylakeworld',
+ bio:'Born in Algeria, raised between France and Amsterdam. Unorthodox techno, electro and left-field electronics — always focused on the dancefloor. Debuted on CARISTA\'s United Identities compilation in 2020, then Nous\'klaer Audio. Opens Cuboid as the afternoon builds.',
+ links:[
+  {p:'SC',l:'SoundCloud',s:'Electro & techno sets',u:'https://soundcloud.com/marylakeworld'},
+  {p:'RA',l:'RA profile',s:'Bio & events',u:'https://ra.co/dj/marylake'},
+ ]},
+
+{id:'jakojako', stage:'cuboid', slot:'14:30–16:30',
+ name:'JakoJako', origin:'Berlin, DE',
+ warm:false,live:false,hl:false,local:false,
+ genres:['Techno','Ambient','Modular'],
+ ra:4200, ra_c:false, ra_n:'~4.2K estimated via ra.co.',
+ ig:15000, ig_c:false, ig_n:'~15K estimated.',
+ sc:'jakojako_live',
+ img:'https://i1.sndcdn.com/avatars-onQu4Jjo7Y4VWnB3-6uoqKg-large.jpg', ig_h:'jakojako',
+ bio:'Berlin-based artist and modular synthesist. Hardware-led sets that move between deep techno, ambient tension and live improvisation — a natural bridge from Mary Lake\'s leftfield opener toward the live block that follows on Cuboid.',
+ links:[
+  {p:'SC',l:'SoundCloud',s:'Live & DJ sets',u:'https://soundcloud.com/jakojako_live'},
+  {p:'RA',l:'RA profile',s:'Bio & dates',u:'https://ra.co/dj/jakojako'},
+  {p:'IG',l:'Instagram @jakojako',s:'Live hardware & studio',u:'https://www.instagram.com/jakojako/'},
+ ]},
+
+{id:'vtl', stage:'cuboid', slot:'16:30–18:30',
+ name:'Voices From The Lake (live)', origin:'Italy',
+ warm:false,live:true,hl:false,local:false,
+ genres:['Ambient techno','Dub techno','Downtempo'],
+ ra:4767, ra_c:true, ra_n:'Confirmed via ra.co (Voices From The Lake (4,767)).',
+ ig:62000, ig_c:true, ig_n:'Confirmed: @donato_dozzy — 62K followers.',
+ sc:'donato-dozzy',
+ img:'https://i1.sndcdn.com/avatars-000085140561-7u4rfh-large.jpg', ig_h:'donato_dozzy',
+ bio:'Donato Dozzy and Neel performing live — near-mythical status in ambient techno. RA voted their 2012 debut Best Album of the Year. Live sets are genuinely rare: meditative, oceanic, slow-moving — completely different from Donato\'s DJ set later on Poly.',
+ links:[
+  {p:'SC',l:'Donato Dozzy — SoundCloud',s:'Ambient techno live & DJ sets',u:'https://soundcloud.com/donato-dozzy'},
+  {p:'YT',l:'YouTube',s:'VFtL live sets',u:'https://www.youtube.com/results?search_query=voices+from+the+lake+live'},
+  {p:'RA',l:'RA profile',s:'Bio & releases',u:'https://ra.co/dj/voicesfromthelake'},
+  {p:'IG',l:'Instagram @donato_dozzy',s:'62K confirmed',u:'https://www.instagram.com/donato_dozzy/'},
+ ]},
+
+{id:'yanam', stage:'cuboid', slot:'18:30–19:30',
+ name:'Yanamaste (live)', origin:'Georgia → Spain',
+ warm:false,live:true,hl:false,local:false,
+ genres:['Live electronic','Techno','Experimental'],
+ ra:5941, ra_c:true, ra_n:'Confirmed via ra.co (Yanamaste (5,941)).',
+ ig:8000, ig_c:false, ig_n:'~8K estimated.',
+ sc:'yanamaste14',
+ img:'https://i1.sndcdn.com/avatars-wEIkYSGQS8PFryhQ-fpm4IA-large.jpg', ig_h:'yanamaste_live',
+ bio:'Live electronic set before Cuboid turns fully peak-time. Not a DJ set: a genuine hardware performance in the golden hour slot, warming the room for Freddy K b2b Setaoc Mass and Robert Hood.',
+ links:[
+  {p:'SC',l:'SoundCloud',s:'Live electronic music',u:'https://soundcloud.com/yanamaste14'},
+  {p:'RA',l:'RA profile',s:'Bio & dates',u:'https://ra.co/dj/yanamaste'},
+ ]},
+
+{id:'fredky', stage:'cuboid', slot:'19:30–21:30',
+ name:'Freddy K b2b Setaoc Mass', origin:'Berlin (IT) / Manchester (CA)',
+ warm:false,live:false,hl:false,local:false,
+ genres:['Techno','Acid techno','Industrial techno'],
+ ra:13089, ra_c:true, ra_n:'Confirmed combined RA followers: Freddy K (5,590) + Setaoc Mass (7,499).',
+ ig:120000, ig_c:true, ig_n:'Confirmed: Freddy K @freddyk3614 — 100K. Setaoc Mass @setaoc_mass — ~20K additional.',
+ sc:'freddy_k_berlin',
+ img:'https://i1.sndcdn.com/avatars-aync1WUN7teWOVRK-aqUiwA-large.jpg', ig_h:'freddyk3614',
+ bio:'Freddy K: Berlin techno activist since 1991, strictly vinyl, KEY label founder. Setaoc Mass: IDM-inflected techno from the Klockworks orbit, Berghain regular. Together: deep, dark, forensically selected techno as Cuboid hits peak time.',
+ links:[
+  {p:'SC',l:'Freddy K — SoundCloud',s:'Vinyl techno sets',u:'https://soundcloud.com/freddy_k_berlin'},
+  {p:'SC',l:'Setaoc Mass — SoundCloud',s:'IDM-techno sets',u:'https://soundcloud.com/setaoc_mass'},
+  {p:'RA',l:'RA — Freddy K',s:'Profile & bio',u:'https://ra.co/dj/freddyk'},
+  {p:'RA',l:'RA — Setaoc Mass',s:'Profile & dates',u:'https://ra.co/dj/setaocmass'},
+  {p:'IG',l:'Instagram @freddyk3614',s:'100K confirmed',u:'https://www.instagram.com/freddyk3614/'},
+ ]},
+
+{id:'rhood', stage:'cuboid', slot:'21:30–23:30',
+ name:'Robert Hood', origin:'Detroit, USA',
+ warm:false,live:false,hl:true,local:false,
+ genres:['Detroit techno','Minimal techno','Acid techno'],
+ ra:26819, ra_c:true, ra_n:'Confirmed via ra.co (Robert Hood (26,819)).',
+ ig:60000, ig_c:true, ig_n:'Confirmed: @roberthood313 — 60K followers.',
+ sc:'roberthood',
+ img:'https://i1.sndcdn.com/avatars-uezdcqbCepanOsIz-6Ep8Qw-large.jpg', ig_h:'roberthood313',
+ bio:'Founding father of Detroit techno and member of Underground Resistance. Three decades of minimal, spiritual 4/4 through his M-Plant label and Floorplan alias. Closes Cuboid — a genuinely historical way to end the night on the flagship stage.',
+ links:[
+  {p:'SC',l:'SoundCloud',s:'His main listening home',u:'https://soundcloud.com/roberthood'},
+  {p:'YT',l:'YouTube',s:'Essential live sets',u:'https://www.youtube.com/results?search_query=robert+hood+dj+set'},
+  {p:'RA',l:'RA profile',s:'Biography & tour dates',u:'https://ra.co/dj/roberthood'},
+  {p:'IG',l:'Instagram @roberthood313',s:'60K confirmed followers',u:'https://www.instagram.com/roberthood313/'},
+ ]},
+
+// ── Sphere ─────────────────────────────────────────────────────────
+{id:'kyrak', stage:'sphere', slot:'12:00–14:00',
+ name:'Kyra Khaldi', origin:'Amsterdam, NL',
+ warm:true,live:false,hl:false,local:true,
+ genres:['House','Electro','Techno'],
+ ra:75, ra_c:true, ra_n:'Confirmed via ra.co (Kyra Khaldi (75)).',
+ ig:5200, ig_c:true, ig_n:'Confirmed: @kyrakhaldi — 5.2K followers.',
+ sc:'kyrakhaldi',
+ img:'https://i1.sndcdn.com/avatars-tn2ZlSOREajv4xBR-4FGE5A-large.jpg', ig_h:'kyrakhaldi',
+ bio:'Half Dutch, half Tunisian, Amsterdam-based co-founder of Foresight Records. Deep house, electro and tribal techno — eclectic but grounded, opening Sphere as the circular floor finds its rhythm.',
+ links:[
+  {p:'SC',l:'SoundCloud',s:'DJ sets & productions',u:'https://soundcloud.com/kyrakhaldi'},
+  {p:'RA',l:'RA profile',s:'Upcoming dates',u:'https://ra.co/dj/kyrakhaldi'},
+  {p:'IG',l:'Instagram @kyrakhaldi',s:'5.2K confirmed',u:'https://www.instagram.com/kyrakhaldi/'},
+ ]},
+
+{id:'spray', stage:'sphere', slot:'14:00–16:00',
+ name:'Spray', origin:'UK',
+ warm:false,live:false,hl:false,local:false,
+ genres:['Electronic','Hyperpop','Rave'],
+ ra:800, ra_c:false, ra_n:'~800 estimated via ra.co.',
+ ig:5000, ig_c:false, ig_n:'~5K estimated.',
+ sc:'sprayforever',
+ img:'https://i1.sndcdn.com/avatars-EhWA7x44VL8i3yvA-yTP8Pw-large.jpg', ig_h:'sprayhq',
+ bio:'Spray — the project of Rosa Anschütz and AGF — pushes hyper-electronic pop and rave energy into Sphere\'s house-and-trance arc. Playful, sharp and unapologetically forward.',
+ links:[
+  {p:'SC',l:'SoundCloud',s:'Releases & mixes',u:'https://soundcloud.com/sprayforever'},
+  {p:'RA',l:'RA profile',s:'Bio & dates',u:'https://ra.co/dj/spray'},
+ ]},
+
+{id:'sallc', stage:'sphere', slot:'16:00–18:00',
+ name:'Sally C', origin:'Belfast, UK → Berlin',
+ warm:false,live:false,hl:false,local:false,
+ genres:['House','Acid house','Breakbeat'],
+ ra:6754, ra_c:true, ra_n:'Confirmed via ra.co (Sally C (6,754)).',
+ ig:53100, ig_c:true, ig_n:'Confirmed: @sallycberlin — 53.1K followers.',
+ sc:'sallycberlin',
+ img:'https://i1.sndcdn.com/avatars-kaWoHEaMz5nX5mzw-uE8zzQ-large.jpg', ig_h:'sallycberlin',
+ bio:'Belfast-born, Berlin-based DJ & producer. Big Saldo\'s Chunkers label; vintage house, hip house, acid and breakbeat. Panorama Bar and Robert Johnson regular — Sphere synergy in full swing.',
+ links:[
+  {p:'SC',l:'SoundCloud',s:'House & acid sets',u:'https://soundcloud.com/sallycberlin'},
+  {p:'RA',l:'RA profile',s:'Bio & dates',u:'https://ra.co/dj/sallyc'},
+  {p:'IG',l:'Instagram @sallycberlin',s:'53.1K confirmed',u:'https://www.instagram.com/sallycberlin/'},
+ ]},
+
+{id:'benwal', stage:'sphere', slot:'18:00–19:30',
+ name:'Benwal', origin:'Netherlands',
+ warm:false,live:false,hl:true,local:true,
+ genres:['Trance','Hard house','Rave'],
+ ra:4344, ra_c:true, ra_n:'Confirmed via ra.co (Benwal (4,344)).',
+ ig:62000, ig_c:true, ig_n:'Confirmed: @benwal.music — 62K followers.',
+ sc:'benwalmusic',
+ img:'https://i1.sndcdn.com/avatars-202Jc1XivV7XBmgy-3Tzd2g-large.jpg', ig_h:'benwal.music',
+ bio:'"A 90s vibe with a 20s twist." Benwal sparked the Dutch trance and hard house revival. Awakenings regular and Sphere headliner as the sun drops and the floor locks in.',
+ links:[
+  {p:'SC',l:'SoundCloud',s:'Trance & hard house sets',u:'https://soundcloud.com/benwalmusic'},
+  {p:'YT',l:'YouTube',s:'Festival & club sets',u:'https://www.youtube.com/results?search_query=benwal+dj+set+2025'},
+  {p:'RA',l:'RA profile',s:'Bio & upcoming',u:'https://ra.co/dj/benwal'},
+  {p:'IG',l:'Instagram @benwal.music',s:'62K confirmed',u:'https://www.instagram.com/benwal.music/'},
+ ]},
+
+{id:'xclub', stage:'sphere', slot:'19:30–21:30',
+ name:'X CLUB.', origin:'Australia',
+ warm:false,live:false,hl:false,local:false,
+ genres:['Techno','Hard dance','Trance'],
+ ra:2500, ra_c:false, ra_n:'~2.5K estimated via ra.co.',
+ ig:87800, ig_c:true, ig_n:'Confirmed: @xclub___ — 87.8K followers.',
+ sc:'itsxclub',
+ img:'https://i1.sndcdn.com/avatars-ymZuVQzTy7eEdSAP-3oX8Aw-large.jpg', ig_h:'xclub___',
+ bio:'Australian duo pushing high-energy techno and hard dance — peak Sphere material when the room wants velocity, hands in the air and zero compromise.',
+ links:[
+  {p:'SC',l:'SoundCloud',s:'Hard dance & techno',u:'https://soundcloud.com/itsxclub'},
+  {p:'RA',l:'RA profile',s:'Bio & dates',u:'https://ra.co/dj/xclub'},
+  {p:'IG',l:'Instagram @xclub___',s:'87.8K confirmed',u:'https://www.instagram.com/xclub___'},
+ ]},
+
+{id:'salute', stage:'sphere', slot:'21:30–23:30',
+ name:'salute', origin:'Vienna, AT → UK',
+ warm:false,live:false,hl:false,local:false,
+ genres:['UK garage','Bass','Breakbeat'],
+ ra:29750, ra_c:true, ra_n:'Confirmed via ra.co (salute (29,750)).',
+ ig:8000, ig_c:false, ig_n:'~8K estimated.',
+ sc:'saluteaut',
+ img:'https://i1.sndcdn.com/avatars-7THr2dUAWyflOqth-8L9q3A-large.jpg', ig_h:'salute_music',
+ bio:'Austrian-born, UK-based producer (Ninja Tune). UK garage and bass with grime and dance-pop sensibilities — airy, bittersweet, festival-ready. Closes Sphere with one of the largest catalogues on the bill.',
+ links:[
+  {p:'SC',l:'SoundCloud',s:'Releases & mixes',u:'https://soundcloud.com/saluteaut'},
+  {p:'RA',l:'RA profile',s:'Bio & dates',u:'https://ra.co/dj/salute'},
+ ]},
+
+// ── Tetra (hosted by Daria Kolosova · powered by Bud) ─────────────
+{id:'djcontest', stage:'tetra', slot:'12:00–14:00',
+ name:'DJ Contest', origin:'The Hague, NL',
+ warm:true,live:false,hl:false,local:true,
+ genres:['Techno','Hard techno'],
+ ra:0, ra_c:false, ra_n:'Winner TBA — Bud-powered contest on Tetra.',
+ ig:0, ig_c:false, ig_n:'',
+ sc:'', ig_h:'',
+ bio:'The Bud DJ Contest on Tetra — local talent competing for this slot on Daria Kolosova\'s stage. Raw warehouse energy from the first hour inside the enclosed room.',
+ links:[
+  {p:'WEB',l:'The Crave Festival',s:'Contest info & tickets',u:'https://thecrave.nl/'},
+ ]},
+
+{id:'uberk', stage:'tetra', slot:'14:00–15:30',
+ name:'ÜBERKIKZ', origin:'Russia → Berlin',
+ warm:false,live:false,hl:false,local:false,
+ genres:['Hard techno','Industrial techno'],
+ ra:1195, ra_c:true, ra_n:'Confirmed via ra.co (ÜBERKIKZ (1,195)).',
+ ig:12000, ig_c:false, ig_n:'~12K estimated.',
+ sc:'uberkikz',
+ img:'https://i1.sndcdn.com/avatars-4UiLPSxPaTqNlFj4-LFWyvw-large.jpg', ig_h:'uberkikz',
+ bio:'Berlin-based hard techno — relentless pounding sound after the contest opener. Tetra\'s walls, darkness and sub pressure build from here.',
+ links:[
+  {p:'SC',l:'SoundCloud',s:'Hard techno sets',u:'https://soundcloud.com/uberkikz'},
+  {p:'RA',l:'RA profile',s:'Dates',u:'https://ra.co/dj/uberkikz'},
+ ]},
+
+{id:'kink', stage:'tetra', slot:'15:30–17:30',
+ name:'KiNK & Raredub (live & DJ)', origin:'Sofia, BG',
+ warm:false,live:true,hl:false,local:false,
+ genres:['Techno','House','Live electronic'],
+ ra:31271, ra_c:true, ra_n:'Confirmed via ra.co (KiNK (31,271)).',
+ ig:217000, ig_c:true, ig_n:'Confirmed: @kink303 — 217K followers.',
+ sc:'kink',
+ img:'https://i1.sndcdn.com/avatars-CLo8zwe1v9FpWtbf-bmy1Vg-large.jpg', ig_h:'kink303',
+ bio:'KiNK improvises live with hardware — every set genuinely different. Live & DJ hybrid on Tetra: a rare festival format inside the warehouse room.',
+ links:[
+  {p:'SC',l:'SoundCloud',s:'Live hardware sets',u:'https://soundcloud.com/kink'},
+  {p:'YT',l:'Boiler Room live set',s:'Essential reference',u:'https://www.youtube.com/results?search_query=kink+boiler+room+live+hardware'},
+  {p:'RA',l:'RA profile',s:'Dates & bio',u:'https://ra.co/dj/kink'},
+  {p:'IG',l:'Instagram @kink303',s:'217K confirmed',u:'https://www.instagram.com/kink303/'},
+ ]},
+
+{id:'phpacho', stage:'tetra', slot:'17:30–19:30',
+ name:'Philippa Pacho', origin:'Stockholm, SE → Berlin',
+ warm:false,live:false,hl:true,local:false,
+ genres:['Techno','Melodic techno','Rave'],
+ ra:1651, ra_c:true, ra_n:'Confirmed via ra.co (Philippa Pacho (1,651)).',
+ ig:36000, ig_c:true, ig_n:'Confirmed: @philippapacho — 36K followers.',
+ sc:'philippapacho',
+ img:'https://i1.sndcdn.com/avatars-RzDs3uhP6pHsVqVI-4lXDTg-large.jpg', ig_h:'philippapacho',
+ bio:'Sweden-born, Berlin-based, Berghain resident. Bold yet fluid techno on Tetra before the Chlär b2b Stranger peak and Daria\'s closing set. Co-runs positivesource with Blue Hour.',
+ links:[
+  {p:'SC',l:'SoundCloud',s:'DJ sets',u:'https://soundcloud.com/philippapacho'},
+  {p:'YT',l:'YouTube',s:'Festival & Berghain sets',u:'https://www.youtube.com/results?search_query=philippa+pacho+dj+set'},
+  {p:'RA',l:'RA profile',s:'Tour dates & bio',u:'https://ra.co/dj/philippapacho'},
+  {p:'IG',l:'Instagram @philippapacho',s:'36K confirmed followers',u:'https://www.instagram.com/philippapacho/'},
+ ]},
+
+{id:'chlstr', stage:'tetra', slot:'19:30–21:30',
+ name:'Chlär b2b Stranger (NL)', origin:'Switzerland / Rotterdam, NL',
+ warm:false,live:false,hl:false,local:true,
+ genres:['Industrial techno','Hard techno','Techno'],
+ ra:14094, ra_c:true, ra_n:'Confirmed combined RA followers: Chlär (13,032) + stranger (NL) (1,062).',
+ ig:50000, ig_c:true, ig_n:'Stranger (NL) @whoisstrangernl — 25K confirmed. Chlär est. ~25K combined.',
+ sc:'chlaer',
+ img:'https://i1.sndcdn.com/avatars-3VWa7F9jcVLjGysQ-iz15pQ-large.jpg', ig_h:'whoisstrangernl',
+ bio:'Chlär meets Stranger (NL) — Rotterdam Crave veteran and Self Reflektion founder. Berlin industrial meets local Hague soul in Tetra\'s peak-hour b2b.',
+ links:[
+  {p:'SC',l:'Chlär — SoundCloud',s:'Industrial techno sets',u:'https://soundcloud.com/chlaer'},
+  {p:'SC',l:'Stranger (NL) — SoundCloud',s:'Rotterdam underground',u:'https://soundcloud.com/whoisstranger'},
+  {p:'RA',l:'RA — Chlär',s:'Profile & tour dates',u:'https://ra.co/dj/chlar'},
+  {p:'RA',l:'RA — Stranger (NL)',s:'Profile & dates',u:'https://ra.co/dj/stranger-nl'},
+  {p:'IG',l:'Instagram @whoisstrangernl',s:'25K confirmed (Stranger NL)',u:'https://www.instagram.com/whoisstrangernl/'},
+ ]},
+
+{id:'dkolo', stage:'tetra', slot:'21:30–23:30',
+ name:'Daria Kolosova', origin:'Kyiv, UA → Berlin',
+ warm:false,live:false,hl:true,local:false,
+ genres:['Techno','Hard techno','Industrial'],
+ ra:3206, ra_c:true, ra_n:'Confirmed via ra.co (Daria Kolosova (3,206)).',
+ ig:155000, ig_c:true, ig_n:'Confirmed: @dar.key — 155K followers.',
+ sc:'dar_key',
+ img:'https://i1.sndcdn.com/avatars-AjKcyOLDKMOs2LQP-hymNTQ-large.jpg', ig_h:'dar.key',
+ bio:'4-time Tetra host — she IS this stage at Crave. Uptempo warehouse techno through to dark industrial peak-time. The crowd at 21:30 came specifically for her.',
+ links:[
+  {p:'SC',l:'SoundCloud',s:'Techno sets',u:'https://soundcloud.com/dar_key'},
+  {p:'YT',l:'Crave 2025 Tetra set',s:'Previous performance on this stage',u:'https://www.youtube.com/watch?v=HiVhi5Cf7uA'},
+  {p:'RA',l:'RA profile',s:'Bio & upcoming',u:'https://ra.co/dj/dariakolosova'},
+  {p:'IG',l:'Instagram @dar.key',s:'155K confirmed',u:'https://www.instagram.com/dar.key/'},
+ ]},
+
+// ── Poly ───────────────────────────────────────────────────────────
+{id:'sybil', stage:'poly', slot:'12:30–14:00',
+ name:'Sybil', origin:'London, UK',
+ warm:true,live:false,hl:false,local:false,
+ genres:['Psychedelic techno','Breaks','Downtempo','DnB'],
+ ra:1447, ra_c:true, ra_n:'Confirmed via ra.co (Sybil (1,447)).',
+ ig:6000, ig_c:false, ig_n:'~6K estimated.',
+ sc:'syberkid',
+ img:'https://i1.sndcdn.com/avatars-KJstC3hTkQEV12Uq-5E5tlA-large.jpg', ig_h:'sybil.dj',
+ bio:'Psychedelic techno, breaks, downtempo and DnB — exploration rather than indecision. Curator of Deep Mind Music since 2017. Opens Poly\'s UK-bass-to-jungle arc.',
+ links:[
+  {p:'SC',l:'SoundCloud',s:'Psychedelic techno sets',u:'https://soundcloud.com/syberkid'},
+  {p:'RA',l:'RA profile',s:'Bio & dates',u:'https://ra.co/dj/sybil'},
+ ]},
+
+{id:'fdw', stage:'poly', slot:'14:00–16:00',
+ name:'Forest Drive West', origin:'London, UK',
+ warm:false,live:false,hl:false,local:false,
+ genres:['UK bass','Dub techno','Jungle'],
+ ra:5046, ra_c:true, ra_n:'Confirmed via ra.co (Forest Drive West (5,046)).',
+ ig:12000, ig_c:true, ig_n:'Confirmed: @forestdrivewest — 12K followers.',
+ sc:'forest-drive-west',
+ img:'https://i1.sndcdn.com/avatars-000098776302-qqo38y-large.jpg', ig_h:'forestdrivewest',
+ bio:'Joe Baker — Livity Sound and Rupture LDN cornerstone. Atmospheric dub-techno meeting jungle. The Bristol-bass-to-London thread Poly was built for.',
+ links:[
+  {p:'SC',l:'SoundCloud',s:'Dub techno & jungle',u:'https://soundcloud.com/forest-drive-west'},
+  {p:'RA',l:'RA profile',s:'Bio & releases',u:'https://ra.co/dj/forestdrivewest'},
+  {p:'IG',l:'Instagram @forestdrivewest',s:'12K confirmed',u:'https://www.instagram.com/forestdrivewest/'},
+ ]},
+
+{id:'spekki', stage:'poly', slot:'16:00–17:00',
+ name:'Spekki Webu (live)', origin:'Netherlands',
+ warm:false,live:true,hl:false,local:true,
+ genres:['Psychedelic techno','Live electronic','Trance'],
+ ra:1200, ra_c:false, ra_n:'~1.2K estimated via ra.co.',
+ ig:8000, ig_c:false, ig_n:'~8K estimated.',
+ sc:'spekkiwebu',
+ img:'https://i1.sndcdn.com/avatars-m0GBhy2o9qwzzYbQ-qJhREA-large.jpg', ig_h:'spekkiwebu',
+ bio:'Dutch live act — psychedelic techno and trance-leaning hardware performance in Poly\'s afternoon live window. A festival favourite for leftfield energy.',
+ links:[
+  {p:'SC',l:'SoundCloud',s:'Live sets',u:'https://soundcloud.com/spekkiwebu'},
+  {p:'RA',l:'RA profile',s:'Bio & dates',u:'https://ra.co/dj/spekkiwebu'},
+ ]},
+
+{id:'uziq', stage:'poly', slot:'17:00–18:00',
+ name:'µ-Ziq (live)', origin:'UK',
+ warm:false,live:true,hl:false,local:false,
+ genres:['IDM','Breakbeat','Experimental'],
+ ra:10011, ra_c:true, ra_n:'Confirmed via ra.co (µ-Ziq (10,011)).',
+ ig:22000, ig_c:false, ig_n:'~22K estimated.',
+ sc:'mikep',
+ img:'https://i1.sndcdn.com/avatars-000399153309-16g1np-large.jpg', ig_h:'muziqofficial',
+ bio:'Mike Paradinas — Planet Mu founder, Warp artist, IDM pioneer since 1993. A live µ-Ziq set in 2026 is genuinely rare — don\'t miss the hour on Poly.',
+ links:[
+  {p:'SC',l:'SoundCloud',s:'IDM & leftfield',u:'https://soundcloud.com/mikep'},
+  {p:'YT',l:'YouTube',s:'Live sets & albums',u:'https://www.youtube.com/results?search_query=mu-ziq+live+set'},
+  {p:'RA',l:'RA profile',s:'Bio & dates',u:'https://ra.co/dj/u-ziq'},
+ ]},
+
+{id:'darwin', stage:'poly', slot:'18:00–19:30',
+ name:'Darwin', origin:'Berlin, DE',
+ warm:false,live:false,hl:false,local:false,
+ genres:['Industrial techno','Techno','Breaks'],
+ ra:1251, ra_c:true, ra_n:'Confirmed via ra.co (Darwin (1,251)).',
+ ig:22500, ig_c:true, ig_n:'Confirmed: @darwin_reef — ~22.5K followers.',
+ sc:'darwinspec',
+ img:'https://i1.sndcdn.com/avatars-000534007485-uusx82-large.jpg', ig_h:'darwin_reef',
+ bio:'Runs SPE:C and REEF (Berghain). Weighty industrial techno, breaks and bass pressure as Poly moves into peak selectors territory.',
+ links:[
+  {p:'SC',l:'SoundCloud',s:'Industrial techno',u:'https://soundcloud.com/darwinspec'},
+  {p:'RA',l:'RA profile',s:'Dates',u:'https://ra.co/dj/darwin'},
+ ]},
+
+{id:'djrum', stage:'poly', slot:'19:30–21:00',
+ name:'DjRUM', origin:'London, UK',
+ warm:false,live:false,hl:false,local:false,
+ genres:['Jungle','Broken beat','Bass','Techno'],
+ ra:20193, ra_c:true, ra_n:'Confirmed via ra.co (DjRUM (20,193)).',
+ ig:60000, ig_c:true, ig_n:'Confirmed: @felix_djrum — 60K followers.',
+ sc:'djrum',
+ img:'https://i1.sndcdn.com/avatars-000464064165-kiuksw-large.jpg', ig_h:'felix_djrum',
+ bio:'Felix Manuel — unpredictable jungle, techno, gabber and broken beat assembled with forensic precision. Played Poly\'s equivalent at Crave 2024.',
+ links:[
+  {p:'SC',l:'SoundCloud',s:'Jungle & bass sets',u:'https://soundcloud.com/djrum'},
+  {p:'YT',l:'YouTube',s:'Dekmantel & festival sets',u:'https://www.youtube.com/results?search_query=djrum+dj+set'},
+  {p:'RA',l:'RA profile',s:'Bio & dates',u:'https://ra.co/dj/djrum'},
+  {p:'IG',l:'Instagram @felix_djrum',s:'60K confirmed',u:'https://www.instagram.com/felix_djrum/'},
+ ]},
+
+{id:'dozzy', stage:'poly', slot:'21:00–23:30',
+ name:'Donato Dozzy', origin:'Rome, IT',
+ warm:false,live:false,hl:true,local:false,
+ genres:['Techno','Dub techno','Ambient techno'],
+ ra:15000, ra_c:false, ra_n:'~15K estimated via ra.co.',
+ ig:62000, ig_c:true, ig_n:'Confirmed: @donato_dozzy — 62K followers.',
+ sc:'donato-dozzy',
+ img:'https://i1.sndcdn.com/avatars-000085140561-7u4rfh-large.jpg', ig_h:'donato_dozzy',
+ bio:'Roman techno visionary — hypnotic, dubby, marathon DJ sets. Closes Poly after Voices From The Lake live earlier on Cuboid. Two sides of the same master.',
+ links:[
+  {p:'SC',l:'SoundCloud',s:'DJ & live sets',u:'https://soundcloud.com/donato-dozzy'},
+  {p:'RA',l:'RA profile',s:'Bio & dates',u:'https://ra.co/dj/donatodozzy'},
+  {p:'IG',l:'Instagram @donato_dozzy',s:'62K confirmed',u:'https://www.instagram.com/donato_dozzy/'},
+ ]},
+
+// ── PIP ────────────────────────────────────────────────────────────
+{id:'jetti', stage:'pip', slot:'13:00–15:00',
+ name:'Jetti', origin:'Amsterdam, NL',
+ warm:true,live:false,hl:false,local:true,
+ genres:['House','Disco','Italo'],
+ ra:500, ra_c:false, ra_n:'~500 estimated via ra.co.',
+ ig:4000, ig_c:false, ig_n:'~4K estimated.',
+ sc:'', ig_h:'jettisteffers',
+ bio:'Amsterdam selector — groovy house and disco for PIP\'s sun-drenched opening. The Hague creative hub stage at its most welcoming.',
+ links:[
+  {p:'IG',l:'Instagram @jettisteffers',s:'BAR Rotterdam co-founder',u:'https://www.instagram.com/jettisteffers/'},
+  {p:'RA',l:'RA profile',s:'Bio & dates',u:'https://ra.co/dj/jetti'},
+ ]},
+
+{id:'d6teen', stage:'pip', slot:'15:00–17:00',
+ name:'DJ sweet6teen', origin:'Cologne, DE',
+ warm:false,live:false,hl:false,local:false,
+ genres:['Techno','Hard techno','Trance'],
+ ra:748, ra_c:true, ra_n:'Confirmed via ra.co (dj sweet6teen (748)).',
+ ig:5000, ig_c:false, ig_n:'~5K estimated.',
+ sc:'djsweet6teen',
+ img:'https://i1.sndcdn.com/avatars-384Byb5QIBAUqF5x-7iiVXg-large.jpg', ig_h:'djsweet6teen',
+ bio:'Dark, niche Phantasy Dance energy — has played b2b with Benwal. Afternoon groove on PIP before Rey Colino and the evening build.',
+ links:[
+  {p:'SC',l:'SoundCloud',s:'Dark techno & prog sets',u:'https://soundcloud.com/djsweet6teen'},
+  {p:'RA',l:'RA profile',s:'Bio & dates',u:'https://ra.co/dj/djsweet6teen'},
+ ]},
+
+{id:'reyco', stage:'pip', slot:'17:00–18:30',
+ name:'Rey Colino', origin:'Brussels, BE → Amsterdam',
+ warm:false,live:false,hl:false,local:false,
+ genres:['Acid','Electro','House'],
+ ra:387, ra_c:true, ra_n:'Confirmed via ra.co (Rey Colino (387)).',
+ ig:5000, ig_c:false, ig_n:'~5K estimated.',
+ sc:'reycolino',
+ img:'https://i1.sndcdn.com/avatars-xbICGEyOOh4XJQM0-aAvyXg-large.jpg', ig_h:'reycolino',
+ bio:'Founder of Kalahari Oyster Cult — acid, garage house and leftfield abstraction. Vinyl-focused, genuinely unpredictable. Golden hour on PIP.',
+ links:[
+  {p:'SC',l:'SoundCloud',s:'Acid & leftfield',u:'https://soundcloud.com/reycolino'},
+  {p:'RA',l:'RA profile + Kalahari',s:'Bio & label',u:'https://ra.co/dj/reycolino'},
+ ]},
+
+{id:'oceanic', stage:'pip', slot:'18:30–19:30',
+ name:'Oceanic', origin:'UK',
+ warm:false,live:false,hl:false,local:false,
+ genres:['House','Techno','Breakbeat'],
+ ra:3500, ra_c:false, ra_n:'~3.5K estimated via ra.co.',
+ ig:12000, ig_c:false, ig_n:'~12K estimated.',
+ sc:'oceanicocean',
+ img:'https://i1.sndcdn.com/avatars-RHCqdVv2CLyAub2U-JtDdmA-large.jpg', ig_h:'oceanic_music',
+ bio:'Christopher Musgrave — Houndstooth and Technicolour releases. Melodic house and techno with breakbeat sensibility; lifts PIP into the evening.',
+ links:[
+  {p:'SC',l:'SoundCloud',s:'Releases & mixes',u:'https://soundcloud.com/oceanicocean'},
+  {p:'RA',l:'RA profile',s:'Bio & dates',u:'https://ra.co/dj/oceanic'},
+ ]},
+
+{id:'kia', stage:'pip', slot:'19:30–21:00',
+ name:'Kia', origin:'London, UK',
+ warm:false,live:false,hl:false,local:false,
+ genres:['House','UK garage','Disco'],
+ ra:2000, ra_c:false, ra_n:'~2K estimated via ra.co.',
+ ig:15000, ig_c:false, ig_n:'~15K estimated.',
+ sc:'', ig_h:'kiadjs',
+ bio:'London selector and NTS regular — soulful house, garage and disco. Pre-headline slot before CARISTA closes PIP.',
+ links:[
+  {p:'RA',l:'RA profile',s:'Bio & dates',u:'https://ra.co/dj/kia'},
+ ]},
+
+{id:'carista', stage:'pip', slot:'21:30–23:30',
+ name:'CARISTA', origin:'Utrecht, NL',
+ warm:false,live:false,hl:false,local:false,
+ genres:['House','Disco','Soulful house'],
+ ra:1410, ra_c:true, ra_n:'Confirmed via ra.co (CARISTA (1,410)).',
+ ig:49000, ig_c:true, ig_n:'Confirmed: @__carista — 49K followers.',
+ sc:'iamcarista',
+ img:'https://i1.sndcdn.com/avatars-klTiRxYSAIYwOWJd-S5gkOQ-large.jpg', ig_h:'__carista',
+ bio:'NTS host and United Identities founder — launched Mary Lake, who opens Cuboid today. Full-circle: warm disco-infused house closes PIP as the festival ends.',
+ links:[
+  {p:'SC',l:'SoundCloud',s:'House & disco sets',u:'https://soundcloud.com/iamcarista'},
+  {p:'YT',l:'YouTube',s:'NTS mixes & festival sets',u:'https://www.youtube.com/results?search_query=carista+dj+set'},
+  {p:'RA',l:'RA profile',s:'Bio & tour dates',u:'https://ra.co/dj/carista'},
+  {p:'IG',l:'Instagram @__carista',s:'49K confirmed',u:'https://www.instagram.com/__carista/'},
+ ]},
+
+];
+
+// SoundCloud catalog stats (api-widget.soundcloud.com · refreshed 2026-05-18)
+const SC_LIVE={"benwalmusic":{"f":20926,"tc":13,"pc":4,"p":1222899,"tl":43941,"c":"Amsterdam","top":["Benwal - Just Go *FREE DOWNLOAD*",526813],"pro":1,"tops":[["Benwal - Just Go *FREE DOWNLOAD*",526813,"https://soundcloud.com/benwalmusic/benwal-just-go-free-download"],["Benwal - Dive",226820,"https://soundcloud.com/benwalmusic/benwal-dive"],["Benwal @ Die Rakete, RADION - 05.05.2023",178616,"https://soundcloud.com/benwalmusic/dieraketebenwal"],["BENWAL @ NOUW | Triple J MIX UP 6/4/25",61608,"https://soundcloud.com/benwalmusic/benwal-nouw-triple-j-mix-up-6425"],["Benwal @ F_AKE Barcelona 02.04.2022",45565,"https://soundcloud.com/benwalmusic/benwal-f_ake-barcelona-02042022"],["Feel Better",37199,"https://soundcloud.com/benwalmusic/feel-better"],["Benwal, Freddi - Bendi (So Good) (Extended)",34964,"https://soundcloud.com/benwalmusic/benwal-freddi-bendi-so-good"],["Benwal, Freddi - Drum's Dance (Extended)",29339,"https://soundcloud.com/benwalmusic/benwal-freddi-drums-dance-extended"]],"av":"https://i1.sndcdn.com/avatars-202Jc1XivV7XBmgy-3Tzd2g-large.jpg","vis":"https://i1.sndcdn.com/visuals-000603043062-IkfRJI-original.jpg"},"chlaer":{"f":48293,"tc":15,"pc":14,"p":1586506,"tl":58978,"c":"Berlin","top":["Chlär Boiler Room X Glitch Festival 2023",370981],"pro":1,"tops":[["Chlär Boiler Room X Glitch Festival 2023",370981,"https://soundcloud.com/chlaer/chlar-boiler-room-x-glitch-festival-2023"],["Downtown Rave",272889,"https://soundcloud.com/chlaer/4-downtown-rave"],["Premiere: Chlär - Competitive Influencing [PI02]",158325,"https://soundcloud.com/chlaer/premiere-chlar-competitive-influencing-pi02"],["Premiere: Chlär - Lick Your Soul [VAULTREC003]",132524,"https://soundcloud.com/chlaer/premiere-chlar-lick-your-soul-vaultrec003"],["Premiere: Chlär - Fortress Of Illusion [PI05]",104035,"https://soundcloud.com/chlaer/premiere-d1-chlar-fortress-of-illusion-pi05"],["Sleep Deprivation",98757,"https://soundcloud.com/chlaer/1-sleep-deprivation"],["Premiere : Chlär - Maximum Performance [MR005]",97098,"https://soundcloud.com/chlaer/premiere-chlar-maximum-performance-mr005"],["Chlär - Yellow And Blue",68997,"https://soundcloud.com/chlaer/chlar-yellow-and-blue-1"]],"av":"https://i1.sndcdn.com/avatars-3VWa7F9jcVLjGysQ-iz15pQ-large.jpg","vis":"https://i1.sndcdn.com/visuals-000237120363-2ezxe1-original.jpg"},"dar_key":{"f":32121,"tc":10,"pc":2,"p":412111,"tl":13047,"c":"Kyiv","top":["Daria Kolosova - PULSE | Crest + Blck Box 27.03.20",187939],"pro":1,"tops":[["Daria Kolosova - PULSE | Crest + Blck Box 27.03.20",187939,"https://soundcloud.com/dar_key/daria-kolosova-pulse-crest-blck-box-270320"],["Daria Kolosova @ Traverz - 2.03.2019",82284,"https://soundcloud.com/dar_key/daria-kolosova-traverz-2032019"],["Daria Kolosova @ Mala Junta X Crest - 21.02.20",68571,"https://soundcloud.com/dar_key/daria-kolosova-mala-junta-x-crest-210220"],["Daria Kolosova@20ft Radio 26/05/2017",25968,"https://soundcloud.com/dar_key/daria-kolosova20ft-radio-26052017"],["Kolosova - Zavtra @ Keller - 07mar2017",12661,"https://soundcloud.com/dar_key/zavtra"],["dar:k - Keller 29jan2016",9270,"https://soundcloud.com/dar_key/dark-keller-29jan2016"],["Kolosova - CUEMColombia - PODCAST 023",8868,"https://soundcloud.com/dar_key/cuemcolombia-podcast-023"],["Berchy b2b Dar:k - Ostrov Festival promo mix",8790,"https://soundcloud.com/dar_key/berchy-b2b-dark-ostrov-festival-promo"]],"av":"https://i1.sndcdn.com/avatars-AjKcyOLDKMOs2LQP-hymNTQ-large.jpg","vis":"https://i1.sndcdn.com/visuals-000137967855-1lzlWv-original.jpg"},"darwinspec":{"f":9194,"tc":9,"pc":1,"p":90339,"tl":4162,"c":"Berlin","top":["Darwin NAAFI NTS Mix",22942],"pro":1,"tops":[["Darwin NAAFI NTS Mix",22942,"https://soundcloud.com/darwinspec/darwin-naafi-nts-mix"],["BBC Radio 6 Mix For Sherelle",15011,"https://soundcloud.com/darwinspec/bbc-radio-6-mix-for-sherelle"],["Darwin - Livity Sound NTS",12944,"https://soundcloud.com/darwinspec/darwin-livity-sound-nts"],["Darwin - Garage Hour - Rinse FM",12435,"https://soundcloud.com/darwinspec/darwin-garage-hour-rinse-fm"],["Darwin  - Noods Radio Mix For Cera Khin",9624,"https://soundcloud.com/darwinspec/darwin-noods-radio-mix-for-cera-khin"],["Darwin Mix BBC 6 Music",5406,"https://soundcloud.com/darwinspec/darwin-mix-bbc-6-music"],["Darwin - RBMA Choice Mix",5017,"https://soundcloud.com/darwinspec/darwin-rbma-choice-mix"],["Darwin - Restrictions Mix",3816,"https://soundcloud.com/darwinspec/darwin-restrictions-mix"]],"av":"https://i1.sndcdn.com/avatars-000534007485-uusx82-large.jpg","vis":"https://i1.sndcdn.com/visuals-000000560977-aruLOu-original.jpg"},"djrum":{"f":41784,"tc":60,"pc":14,"p":1225873,"tl":48303,"c":"","top":["Wild Beasts - A Simple Beautiful Truth (Djrum remix)",127884],"tops":[["Wild Beasts - A Simple Beautiful Truth (Djrum remix)",127884,"https://soundcloud.com/djrum/wild-beasts-a-simple-beautiful-truth-djrum-remix"],["Sex",101457,"https://soundcloud.com/djrum/sex-1"],["DjRUM - Imaginary Movie Mix for Resident Advisor",81994,"https://soundcloud.com/djrum/djrum-ra-mix"],["Waters Rising",81009,"https://soundcloud.com/djrum/waters-rising"],["Soundtrack To An Imaginary Movie Mix for Clash Magazine 320",59950,"https://soundcloud.com/djrum/djrum-clashmagazine-mix"],["Hard to Say",59052,"https://soundcloud.com/djrum/hard-to-say"],["Djrum - Seven Lies LP preview minimix - Out NOW",57020,"https://soundcloud.com/djrum/djrum-seven-lies-lp-preview"],["Soundtrack to an imaginary film mix for Mary Anne Hobbs on X-FM [DOWNLOAD in comments]",54362,"https://soundcloud.com/djrum/soundtrack-to-an-imaginary"]],"av":"https://i1.sndcdn.com/avatars-000464064165-kiuksw-large.jpg","vis":"https://i1.sndcdn.com/visuals-000000210189-2VLucT-original.jpg"},"djsweet6teen":{"f":8995,"tc":4,"pc":1,"p":98163,"tl":4933,"c":"berlin & cologne, germany","top":["from cologne by dj sweet6teen @radio80000",42432],"pro":1,"tops":[["from cologne by dj sweet6teen @radio80000",42432,"https://soundcloud.com/djsweet6teen/from-cologne-by-dj-sweet6teen-radio80000"],["live @ the spookathon on hoppetosse: dj sweet6teen (03/11/24)",23799,"https://soundcloud.com/djsweet6teen/live-the-spookathon-on-hoppetosse-dj-sweet6teen-031125"],["live @ brandwerk open air: lemsn b2b dj sweet6teen b2b jascha yousefi  (20/07/24)",19904,"https://soundcloud.com/djsweet6teen/lemsn-b2b-dj-sweet6teen-b2b-jascha-yousefi-live-brandwerk-open-air-20072024"],["live @ research: lemsn b2b dj sweet6teen (19/01/25)",12028,"https://soundcloud.com/djsweet6teen/live-research-lemsn-b2b-dj-sweet6teen-19012025"]],"av":"https://i1.sndcdn.com/avatars-384Byb5QIBAUqF5x-7iiVXg-large.jpg","vis":"https://i1.sndcdn.com/visuals-000060475558-mQNZyv-original.jpg"},"donato-dozzy":{"f":57640,"tc":82,"pc":9,"p":872110,"tl":44078,"c":"rome","top":["Donato Dozzy, Terraforma 2017 Secret Closing Set 25th, June 2017",210190],"pro":1,"tops":[["Donato Dozzy, Terraforma 2017 Secret Closing Set 25th, June 2017",210190,"https://soundcloud.com/donato-dozzy/donato-dozzy-terraforma-2017-secret-closing-set-25th-june-2017"],["Donato Dozzy - MQF19",107152,"https://soundcloud.com/donato-dozzy/donato-dozzy-mqf19"],["DD@PARALLEL_19_PART.1",92376,"https://soundcloud.com/donato-dozzy/ddparallel_19_part1"],["visioni sonore dalla via lattea",71950,"https://soundcloud.com/donato-dozzy/passeggiate-poetiche-test2"],["DD@PARALLEL_19_PART.2",59861,"https://soundcloud.com/donato-dozzy/ddparallel_19_part2"],["Bleep43 podcast n.134",39601,"https://soundcloud.com/donato-dozzy/bleep43-podcast-n-134"],["dd@pescheria 15.12.21",38957,"https://soundcloud.com/donato-dozzy/ddpescheria151221"],["visioni sonore dalla via lattea vol.4",24012,"https://soundcloud.com/donato-dozzy/visioni-sonore-dalla-via-lattea-vol4"]],"av":"https://i1.sndcdn.com/avatars-000085140561-7u4rfh-large.jpg","vis":"https://i1.sndcdn.com/visuals-000002471749-jCSfv3-original.jpg"},"forest-drive-west":{"f":12282,"tc":0,"pc":2,"p":0,"tl":0,"c":"","top":null,"av":"https://i1.sndcdn.com/avatars-000098776302-qqo38y-large.jpg","vis":"https://i1.sndcdn.com/visuals-000000248044-UyeUoN-original.jpg"},"freddy_k_berlin":{"f":40447,"tc":183,"pc":6,"p":229078,"tl":8923,"c":"Berlin","top":["KEY015 - A2 - Vela Uniform & Blawan \"Crispy\"",79451],"pro":1,"tops":[["KEY015 - A2 - Vela Uniform & Blawan \"Crispy\"",79451,"https://soundcloud.com/freddy_k_berlin/key015-a2-vela-uniform-blawan-crispy"],["KEY012 - B1 - Moving Thoughts \"Fysica\"",20022,"https://soundcloud.com/freddy_k_berlin/key012-b1-moving-thoughts-fysica"],["Soundwall Podcast #332: Freddy K",17270,"https://soundcloud.com/freddy_k_berlin/soundwall-podcast-332-freddy-k"],["KEY014 - B1 - Benales \"Fraction\"",12882,"https://soundcloud.com/freddy_k_berlin/key014-b1-benales-fraction"],["KEY014 - A2 - Benales \"Particle\"",12588,"https://soundcloud.com/freddy_k_berlin/key014-a2-benales-particle"],["KEYRAINBOW002 - A2 - Cinthie \"Steady Freddy\"",12462,"https://soundcloud.com/freddy_k_berlin/keyrainbow002-a2-cinthie-steady-freddy"],["Krzrzrz - -1",10635,"https://soundcloud.com/freddy_k_berlin/krzrzrz-1"],["KEY013 - A - Splice \"Kobold\"",9981,"https://soundcloud.com/freddy_k_berlin/key013-a-splice-kobold"]],"av":"https://i1.sndcdn.com/avatars-aync1WUN7teWOVRK-aqUiwA-large.jpg","vis":"https://i1.sndcdn.com/visuals-000108109689-oiNctD-original.jpg"},"iamcarista":{"f":13149,"tc":33,"pc":8,"p":108610,"tl":3167,"c":"Utrecht","top":["BBC Radio 1 Essential Mix - February 8, 2020",38113],"pro":1,"tops":[["BBC Radio 1 Essential Mix - February 8, 2020",38113,"https://soundcloud.com/iamcarista/carista-bbc-radio-1-essential-mix-february-8-2020"],["Carista - Live at Doka Amsterdam - June 20, 2020",18148,"https://soundcloud.com/iamcarista/carista-live-at-doka-amsterdam-june-20-2020"],["Modern Intimacy by CARISTA",15802,"https://soundcloud.com/iamcarista/modern-intimacy"],["Carista - NTS - May 11, 2018",6990,"https://soundcloud.com/iamcarista/carista-nts-may-11-2018"],["Carista - Red Light Radio - May 30, 2018",6921,"https://soundcloud.com/iamcarista/carista-red-light-radio-may-30-2018"],["Carista & Ranie Ribeiro - Red Light Radio - March 25, 2019",6696,"https://soundcloud.com/iamcarista/carista-ranie-ribeiro-red-light-radio-march-25-2019"],["Tala Drum Corps | The Taste of Carista x Jager Music - June 21, 2019",6173,"https://soundcloud.com/iamcarista/tala-drum-corps-the-taste-of"],["Alberta Balsam | The Taste of Carista x Jager Music - June 21, 2019",3512,"https://soundcloud.com/iamcarista/alberta-balsam-the-taste-of"]],"av":"https://i1.sndcdn.com/avatars-klTiRxYSAIYwOWJd-S5gkOQ-large.jpg"},"itsxclub":{"f":32075,"tc":20,"pc":32,"p":3187633,"tl":100980,"c":"London","top":["X CLUB. - Stay With Me",527630],"pro":1,"tops":[["X CLUB. - Stay With Me",527630,"https://soundcloud.com/itsxclub/stay-with-me-extended"],["X CLUB. - TIME TO GROOVE",517684,"https://soundcloud.com/itsxclub/x-club-time-to-groove"],["X CLUB. - Desire to Stay",267396,"https://soundcloud.com/itsxclub/x-club-desire-to-stay-extended"],["X CLUB. - RUFF CUTS",238185,"https://soundcloud.com/itsxclub/x-club-ruff-cuts"],["X CLUB. - PUMP UP THE JAM",219007,"https://soundcloud.com/itsxclub/x-club-pump-up-the-jam"],["X CLUB. - Frankie Knuckles [Extended Mix]",209099,"https://soundcloud.com/itsxclub/x-club-frankie-knuckles-extended-mix-mastered"],["X CLUB.  - BEYOND THE VALLEY FESTIVAL 2022",199546,"https://soundcloud.com/itsxclub/x-club-btv-2022"],["X CLUB. - You're Not a Popstar",198493,"https://soundcloud.com/itsxclub/x-club-you_re-not-a-popstar"]],"av":"https://i1.sndcdn.com/avatars-ymZuVQzTy7eEdSAP-3oX8Aw-large.jpg","vis":"https://i1.sndcdn.com/visuals-000054685358-yRZ5gr-original.jpg"},"jakojako_live":{"f":17380,"tc":54,"pc":17,"p":384461,"tl":16004,"c":"Berlin","top":["JakoJako at Ratherlost NYD 01.01.23  Lofi Amsterdam",121533],"pro":1,"tops":[["JakoJako at Ratherlost NYD 01.01.23  Lofi Amsterdam",121533,"https://soundcloud.com/jakojako_live/ratherlost-010123-at-lofi-amsterdam"],["JakoJako - Amygdala (Metamorphose LP)",38728,"https://soundcloud.com/jakojako_live/jakojako-amygdala-metamorphose-lp"],["Jelena b2b JakoJako Nachtfalter Collectif at L'ambassade 4.11.2023",22459,"https://soundcloud.com/jakojako_live/jelena-b2b-jakojako-nachtfalter-collectif-at-lambassade-sionch2023"],["JakoJako & Barker Live @ Mother Tongues",16454,"https://soundcloud.com/jakojako_live/jakojako-barker-live-mother-tongues"],["Barker & JakoJako - Seite an Seite",13477,"https://soundcloud.com/jakojako_live/barker-jakojako-seite-an-seite"],["JakoJako - Deine Augen",12811,"https://soundcloud.com/jakojako_live/jakojako-deine-augen"],["Impetus",11265,"https://soundcloud.com/jakojako_live/impetus"],["JakoJako - Objekt (Metamorphose LP)",9912,"https://soundcloud.com/jakojako_live/jakojako-objekt-metamorphose-lp"]],"av":"https://i1.sndcdn.com/avatars-onQu4Jjo7Y4VWnB3-6uoqKg-large.jpg","vis":"https://i1.sndcdn.com/visuals-000296670869-TpKukL-original.jpg"},"kink":{"f":125935,"tc":190,"pc":30,"p":3382438,"tl":94747,"c":"Sofia","top":["Rachel Row - Follow The Step (KiNK mix)",586971],"tops":[["Rachel Row - Follow The Step (KiNK mix)",586971,"https://soundcloud.com/kink/rachel-row-follow-the-step"],["Perth",227216,"https://soundcloud.com/kink/perth"],["Elektro Guzzi - Atlas (KiNK Mix)",124108,"https://soundcloud.com/kink/electro-guzzi-atlas-kink-mix"],["Leko (Session Victim Remix)",111991,"https://soundcloud.com/kink/leko-session-victim-remix"],["Rachel Row - L Square (KiNK Mix)",111841,"https://soundcloud.com/kink/rachel-row-l-square-kink-mix"],["KiNK - The Roots Of Techno",106011,"https://soundcloud.com/kink/kink-the-roots-of-techno"],["Kanz And KiNK Sofia Session Vs. CeCe Peniston - Finally (KiNK Live Bootleg 01.07.2016)",92526,"https://soundcloud.com/kink/kanz-and-kink-sofia-session-vs-cece-peniston-finally-kink-live-bootleg-01072016"],["KiNK Work Live (edit)",90864,"https://soundcloud.com/kink/kink-work-live-edit"]],"av":"https://i1.sndcdn.com/avatars-CLo8zwe1v9FpWtbf-bmy1Vg-large.jpg","vis":"https://i1.sndcdn.com/visuals-000000002396-AjG5Fo-original.jpg"},"kyrakhaldi":{"f":1346,"tc":9,"pc":4,"p":13626,"tl":492,"c":"Amsterdam","top":["Kyra Khaldi - &FRIENDS // 23.10.2022",4621],"pro":1,"tops":[["Kyra Khaldi - &FRIENDS // 23.10.2022",4621,"https://soundcloud.com/kyrakhaldi/kyra-khaldi-friends-23-10-2022"],["Fusion Festival ~ Tanzwüste Stage",3811,"https://soundcloud.com/kyrakhaldi/fusion-festival-recording-1"],["PERIOD",1324,"https://soundcloud.com/kyrakhaldi/period"],["Shelter // 26-05-2023 //",1043,"https://soundcloud.com/kyrakhaldi/shelter-26-05-2023"],["Kyra Khaldi at Wat Anders 3FM",656,"https://soundcloud.com/kyrakhaldi/kyra-khaldi-at-watanders3fm"],["Live-set at Possibilities Open Studio's hosted by Who's Susan.",639,"https://soundcloud.com/kyrakhaldi/live-set-at-possibilities-open-studios-hosted-by-whos-susan"],["Girasole Rosso & Kyra Khaldi - Live at Doka 16-03-2024",538,"https://soundcloud.com/kyrakhaldi/girasole-rosso-kyra-khaldi-live-at-doka-16-03-2024"],["Feierabend Radio // 30.06.2022",537,"https://soundcloud.com/kyrakhaldi/feierabend-radio-30062022"]],"av":"https://i1.sndcdn.com/avatars-tn2ZlSOREajv4xBR-4FGE5A-large.jpg","vis":"https://i1.sndcdn.com/visuals-000116989846-ILczQr-original.jpg"},"marylakeworld":{"f":4112,"tc":7,"pc":1,"p":14189,"tl":570,"c":"Amsterdam","top":["EOS Residency 20220506",6143],"pro":1,"tops":[["EOS Residency 20220506",6143,"https://soundcloud.com/marylakeworld/eos-residency-20220506"],["@VAULT SESSIONS ADE 23/10/25",3382,"https://soundcloud.com/marylakeworld/vault-sessions-ade-231025"],["EOS Residency 20220325",2345,"https://soundcloud.com/marylakeworld/eos-residency-20220325"],["EOS Residency 20220121",1638,"https://soundcloud.com/marylakeworld/eos-residency-20220121"],["1020 Radio: Floor Function w/ Mary Lake",681,"https://soundcloud.com/marylakeworld/1020-radio-floor-function-w-mary-lake"],["Mary Lake 12/09/23",0,"https://soundcloud.com/marylakeworld/hor-radio-120923"],["Détente & Culture: Kalahari Oyster Cult w/ Mary Lake @ LYLradio",0,"https://soundcloud.com/marylakeworld/detente-culture-kalahari-oyster-cult-w-mary-lake-lylradio"]],"av":"https://i1.sndcdn.com/avatars-3B9o1rQ8s8ibP7Ro-jDsYDA-large.jpg","vis":"https://i1.sndcdn.com/visuals-000167458408-AbfDvE-original.jpg"},"mikep":{"f":23578,"tc":285,"pc":23,"p":352666,"tl":12208,"c":"Brighton","top":["FaltyDL - Rolling (µ-Ziq Remix)",57477],"tops":[["FaltyDL - Rolling (µ-Ziq Remix)",57477,"https://soundcloud.com/mikep/faltydlrollingziqremix"],["11 Vodka (Mix 2)",35444,"https://soundcloud.com/mikep/11-vodka-mix-2"],["Inclement (from the album 'Challenge Me Foolish\" 13th April)",26007,"https://soundcloud.com/mikep/inclement"],["Kuedo - Hourglass (µ-Ziq Mix)",25674,"https://soundcloud.com/mikep/kuedo-hourglass-ziq-mix"],["µ-Ziq - Hip House Breakcore",20160,"https://soundcloud.com/mikep/ziq-hip-house-breakcore"],["4am",13326,"https://soundcloud.com/mikep/u-ziq-4am"],["Pangolin",9525,"https://soundcloud.com/mikep/pangolin"],["Lexicon (ft. Kazumi)",9358,"https://soundcloud.com/mikep/08-lexiconx"]],"av":"https://i1.sndcdn.com/avatars-000399153309-16g1np-large.jpg","vis":"https://i1.sndcdn.com/visuals-000000095026-pX8AMr-original.jpg"},"oceanicocean":{"f":5841,"tc":4,"pc":2,"p":41212,"tl":1899,"c":"Germany","top":["Pierre Bastien Et Eddie Ladoire - Phantom Dance #0 (Oceanic Garden Version)",17917],"pro":1,"tops":[["Pierre Bastien Et Eddie Ladoire - Phantom Dance #0 (Oceanic Garden Version)",17917,"https://soundcloud.com/oceanicocean/pierre-bastien-et-eddie-ladoire-phantom-dance-0-oceanic-garden-version"],["upsammy & Oceanic @ Club Quarantäne",14483,"https://soundcloud.com/oceanicocean/upsammy-oceanic-club-qaurantane"],["J.M. | E.A.",5923,"https://soundcloud.com/oceanicocean/jm-oceanic-ea"],["Oceanic -  for calmer waters, and clearer reflections in 2026",2889,"https://soundcloud.com/oceanicocean/oceanic-for-calmer-waters-and-clearer-reflections-in-2026"]],"av":"https://i1.sndcdn.com/avatars-RHCqdVv2CLyAub2U-JtDdmA-large.jpg","vis":"https://i1.sndcdn.com/visuals-000025709248-DiAjBD-original.jpg"},"philippapacho":{"f":14956,"tc":18,"pc":3,"p":184959,"tl":7378,"c":"Berlin","top":["Live @ Nation Of Gondwana 2022 [Bei Birke]",86361],"pro":1,"tops":[["Live @ Nation Of Gondwana 2022 [Bei Birke]",86361,"https://soundcloud.com/philippapacho/live-nation-of-gondwana-2022-bei-birke"],["Connor Wall - Frontex [phorum002]",11039,"https://soundcloud.com/philippapacho/connor-wall-frontex-phorum002-1"],["A1 Regent - Kinesis (preview)",10552,"https://soundcloud.com/philippapacho/a1-regent-kinesis-preview-1"],["Phil Berg - Thrust [phorum001]",10027,"https://soundcloud.com/philippapacho/a1-thrust"],["Phil Berg - Psykick [phorum001]",8101,"https://soundcloud.com/philippapacho/b1-psykick"],["Phil Berg - Elytra [phorum001]",7713,"https://soundcloud.com/philippapacho/a2-elytra"],["Connor Wall - Orbital Momentum [phorum002]",7466,"https://soundcloud.com/philippapacho/connor-wall-orbital-momentum-phorum002-3"],["Connor Wall - Hygeia [phorum002]",7463,"https://soundcloud.com/philippapacho/connor-wall-hygeia-phorum002-2"]],"av":"https://i1.sndcdn.com/avatars-RzDs3uhP6pHsVqVI-4lXDTg-large.jpg","vis":"https://i1.sndcdn.com/visuals-000002216705-mTfUZj-original.jpg"},"reycolino":{"f":4935,"tc":0,"pc":2,"p":0,"tl":0,"c":"Amsterdam/Brussels","top":null,"av":"https://i1.sndcdn.com/avatars-xbICGEyOOh4XJQM0-aAvyXg-large.jpg"},"roberthood":{"f":84089,"tc":351,"pc":80,"p":3102699,"tl":100296,"c":"Detroit","top":["Floorplan - Never Grow Old (Re-Plant)",464678],"pro":1,"tops":[["Floorplan - Never Grow Old (Re-Plant)",464678,"https://soundcloud.com/roberthood/floorplan-never-grow-old-re"],["Robert Hood - Deep Concentration: The Grey Area mix",301879,"https://soundcloud.com/roberthood/robert-hood-deep-concentration"],["Tell You No Lie",231658,"https://soundcloud.com/roberthood/floorplan-tell-you-no-lie-1"],["Floorplan - Tell You No Lie (preview)",186466,"https://soundcloud.com/roberthood/floorplan-tell-you-no-lie-preview"],["Robert Hood Hip Hop DJ set",151235,"https://soundcloud.com/roberthood/robert-hood-hip-hop-dj-set"],["Floorplan - Music (preview)",140208,"https://soundcloud.com/roberthood/floorplan-music-preview"],["Robert Hood 'Rare Species' Mix - from 2002",128415,"https://soundcloud.com/roberthood/robert-hood-rare-species-mix-from-2002"],["We Magnify His Name",109718,"https://soundcloud.com/roberthood/floorplan-we-magnify-his-1"]],"av":"https://i1.sndcdn.com/avatars-uezdcqbCepanOsIz-6Ep8Qw-large.jpg","vis":"https://i1.sndcdn.com/visuals-000067245964-lTXHnC-original.jpg"},"sallycberlin":{"f":16583,"tc":62,"pc":8,"p":620912,"tl":28220,"c":"Berlin","top":["BSC005 Cromby - House Flava EP",119169],"pro":1,"tops":[["BSC005 Cromby - House Flava EP",119169,"https://soundcloud.com/sallycberlin/bsc005-cromby-house-flava-ep"],["Big Saldo's Chunker EP 001",53387,"https://soundcloud.com/sallycberlin/big-saldos-chunker-ep"],["Sally C - HÖR 29.08.2023",33909,"https://soundcloud.com/sallycberlin/sally-c-hor-29082023"],["BSC007 - Papa Nugs - Move It Or Lose It EP",33721,"https://soundcloud.com/sallycberlin/bsc007-papa-nugs-move-it-or-lose-it-ep"],["Big Saldo's Chunker EP 003",30831,"https://soundcloud.com/sallycberlin/big-saldos-chunker-ep-003"],["BSC004 - BELLA - Note To Self EP",28865,"https://soundcloud.com/sallycberlin/bsc004-bella-note-to-self-ep"],["BSC006 DR Pleasure EP",28801,"https://soundcloud.com/sallycberlin/bsc006-dr-pleasure-ep"],["FEEL MY BICEP MIXTAPE 103 | SALLY C",25849,"https://soundcloud.com/sallycberlin/feel-my-bicep-mixtape-103-sally-c"]],"av":"https://i1.sndcdn.com/avatars-kaWoHEaMz5nX5mzw-uE8zzQ-large.jpg","vis":"https://i1.sndcdn.com/visuals-000022779278-K5Jm1i-original.jpg"},"saluteaut":{"f":61040,"tc":153,"pc":38,"p":10231263,"tl":301387,"c":"Manchester","top":["pinkpantheress - Just For Me (salute Edit)",1163521],"pro":1,"tops":[["pinkpantheress - Just For Me (salute Edit)",1163521,"https://soundcloud.com/saluteaut/j4m"],["Peach",792515,"https://soundcloud.com/saluteaut/peach"],["Honey",476625,"https://soundcloud.com/saluteaut/honey"],["KAYTRANADA - Intimidated (feat. H.E.R.) (salute Edit)",380167,"https://soundcloud.com/saluteaut/intimidate"],["Colourblind (ft. ABRA)",348721,"https://soundcloud.com/saluteaut/colourblind"],["Ewan McVicar - Heather Park (salute Remix)",347174,"https://soundcloud.com/saluteaut/ewan-mcvicar-heather-park-salute-version"],["Oh Wonder - All We Do (salute Remix)",315681,"https://soundcloud.com/saluteaut/all-we-do"],["Wait For It",313622,"https://soundcloud.com/saluteaut/wait-for-it"]],"av":"https://i1.sndcdn.com/avatars-7THr2dUAWyflOqth-8L9q3A-large.jpg","vis":"https://i1.sndcdn.com/visuals-000019012841-KlhFHk-original.jpg"},"setaoc_mass":{"f":37287,"tc":59,"pc":12,"p":665878,"tl":27670,"c":"Manchester ","top":["Setaoc Mass - DJ Set @ Open Mind, Naples, IT.",287947],"tops":[["Setaoc Mass - DJ Set @ Open Mind, Naples, IT.",287947,"https://soundcloud.com/setaoc_mass/setaocmassopenmindnaples"],["Setaoc Mass DJ set @ Cocoliche, Buenos Aires (4hours)",104762,"https://soundcloud.com/setaoc_mass/setaocmasscocolicheba"],["Setaoc Mass - Standing [UNITED4EQUITY]",25733,"https://soundcloud.com/setaoc_mass/setaoc-mass-standing-united-for-equity"],["Setaoc Mass - DJ Set on Beaton 02!TV",24572,"https://soundcloud.com/setaoc_mass/setaoc-mass-dj-set-on-beaton-02tv-moscow-russia"],["Exrela (Original Mix)",24053,"https://soundcloud.com/setaoc_mass/exrela-original-mix"],["Evidence",21360,"https://soundcloud.com/setaoc_mass/evidence"],["Rinse FM x R-Imprint invite Setaoc Mass",18132,"https://soundcloud.com/setaoc_mass/rinse-fm-x-r-imprint-invite-setaoc-mass"],["Setaoc Mass - The M Scale EP [WorkThem023]",16055,"https://soundcloud.com/setaoc_mass/setaoc-mass-the-m-scale-ep-workthem023"]],"av":"https://i1.sndcdn.com/avatars-nSYzdRzJKayRKY9j-2wQN4Q-large.jpg","vis":"https://i1.sndcdn.com/visuals-000000438577-fWNwqE-original.jpg"},"spekkiwebu":{"f":10030,"tc":1,"pc":3,"p":17929,"tl":420,"c":"Delft","top":["RLR x The Rest Is Noise @ Dekmantel Festival (02-08-2018)",17929],"pro":1,"tops":[["RLR x The Rest Is Noise @ Dekmantel Festival (02-08-2018)",17929,"https://soundcloud.com/spekkiwebu/rlr-x-the-rest-is-noise-dekmantel-festival-02-08-2018"]],"av":"https://i1.sndcdn.com/avatars-m0GBhy2o9qwzzYbQ-qJhREA-large.jpg","vis":"https://i1.sndcdn.com/visuals-000021721408-ujx6Js-original.jpg"},"sprayforever":{"f":18225,"tc":26,"pc":11,"p":716554,"tl":34139,"c":"Berlin","top":["Spray | Boiler Room X AVA Festival 2023",88466],"pro":1,"tops":[["Spray | Boiler Room X AVA Festival 2023",88466,"https://soundcloud.com/sprayforever/spray-boiler-room-x-ava-festival-2023"],["Spray - Double Stunt",54772,"https://soundcloud.com/sprayforever/spray-double-stunt"],["Spray - 'OT Rails' [SPRAY005]",52363,"https://soundcloud.com/sprayforever/spray-ot-rails-spray005"],["Spray & Baraka - Think of Me",46432,"https://soundcloud.com/sprayforever/think-of-me"],["Spray - Ceathair",42522,"https://soundcloud.com/sprayforever/spray-ceathair"],["Spray - Puk Codes",42418,"https://soundcloud.com/sprayforever/spray-puk-codes"],["Fantazia (Spray Remix)",42075,"https://soundcloud.com/sprayforever/the-trip-fantazia-spray-remix"],["Mpeg - Monte Kali (Spray Remix)",39421,"https://soundcloud.com/sprayforever/mpeg-monte-kali-spray-remix"]],"av":"https://i1.sndcdn.com/avatars-EhWA7x44VL8i3yvA-yTP8Pw-large.jpg","vis":"https://i1.sndcdn.com/visuals-000000357600-2zHv3R-original.jpg"},"syberkid":{"f":12094,"tc":28,"pc":32,"p":259167,"tl":17275,"c":"London, UK","top":["Sybil @ La Nature 2024",24408],"pro":1,"tops":[["Sybil @ La Nature 2024",24408,"https://soundcloud.com/syberkid/la-nature"],["100% euphoria ヾ(✯◠ ֊ ◠)ノ♪",23604,"https://soundcloud.com/syberkid/euphoria-mix"],["Deep Mind Music Vol.1",18953,"https://soundcloud.com/syberkid/deep-mind-music-vol-1"],["Sybil @ Paral·lel 2022",17922,"https://soundcloud.com/syberkid/parallel"],["Deep Mind Music Vol.3",16667,"https://soundcloud.com/syberkid/deep-mind-music-vol-3"],["Sybil @ Transcendence 2024",14797,"https://soundcloud.com/syberkid/transcendence"],["Sybil @ Sustain Release Year 11",13848,"https://soundcloud.com/syberkid/sustain-release"],["Sybil @ Mostra 2024",13452,"https://soundcloud.com/syberkid/mostra"]],"av":"https://i1.sndcdn.com/avatars-KJstC3hTkQEV12Uq-5E5tlA-large.jpg","vis":"https://i1.sndcdn.com/visuals-000014809814-4POjRE-original.jpg"},"uberkikz":{"f":16533,"tc":9,"pc":2,"p":416300,"tl":19647,"c":"Berlin","top":["Live at RSO.BERLIN, 14.06.2025",94629],"pro":1,"tops":[["Live at RSO.BERLIN, 14.06.2025",94629,"https://soundcloud.com/uberkikz/live-at-rsoberlin"],["11.04.2025 live at amp, Münster",60211,"https://soundcloud.com/uberkikz/11-04-2025-live-at-amp"],["HÖR - December 3 / 2024",58879,"https://soundcloud.com/uberkikz/uberkikz-hor-december-3-2024"],["HÖR - January 29 / 2024",46998,"https://soundcloud.com/uberkikz/hor-berlin"],["live at ://about blank 02.11.2023",42185,"https://soundcloud.com/uberkikz/ueberkikz-live-about-blank-02"],["live at Time Warp 2024",39012,"https://soundcloud.com/uberkikz/time-warp"],["ÜBERKIKZ live at Else, Berlin 22.06.24",29461,"https://soundcloud.com/uberkikz/live-else"],["live at Boiler Room 04.10.2024",29445,"https://soundcloud.com/uberkikz/uberkikz-live-at-boiler-room-4102025"]],"av":"https://i1.sndcdn.com/avatars-4UiLPSxPaTqNlFj4-LFWyvw-large.jpg","vis":"https://i1.sndcdn.com/visuals-000060046381-D8OQOj-original.jpg"},"whoisstranger":{"f":22125,"tc":75,"pc":14,"p":1229799,"tl":46693,"c":"rotterdam","top":["Tinfoil - Both Roads To Triogue (stranger's 'Best Of Both Raves' mix)",98626],"pro":1,"tops":[["Tinfoil - Both Roads To Triogue (stranger's 'Best Of Both Raves' mix)",98626,"https://soundcloud.com/whoisstranger/both-roads-to-triogue-remix"],["Stranger b2b Talismann @ Ratherlost ADE 21-10-2022 (Lofi Amsterdam)",75621,"https://soundcloud.com/whoisstranger/ratherlost-ade"],["One Day (Unreleased Version)",74402,"https://soundcloud.com/whoisstranger/one-day-unreleased-version"],["One Day [REFLEKT010A]",66682,"https://soundcloud.com/whoisstranger/one-day-reflekt010a"],["Untitlebret (Out now digitally + red transparent 10\" on PERSPEKTIV003)",55067,"https://soundcloud.com/whoisstranger/untitlebret"],["A2. stranger - Learning Curve (REFLEKT002)",49927,"https://soundcloud.com/whoisstranger/a2-learning-curve"],["DJ-set at Rotterdam Rave (29-03-2019)",37464,"https://soundcloud.com/whoisstranger/rotterdam-rave-29-03-2019"],["Motief [ROD13]",35812,"https://soundcloud.com/whoisstranger/motief-rod13"]],"av":"https://i1.sndcdn.com/avatars-iVqBQdqqrk6zM9Z4-zS5nZg-large.jpg","vis":"https://i1.sndcdn.com/visuals-000003029468-eFobFX-original.jpg"},"yanamaste14":{"f":39477,"tc":16,"pc":3,"p":710583,"tl":27276,"c":"Batumi","top":["Yanamaste - LIVE Set | 27/09/2020 @ KHIDI Club ,Tbilisi",328250],"pro":1,"tops":[["Yanamaste - LIVE Set | 27/09/2020 @ KHIDI Club ,Tbilisi",328250,"https://soundcloud.com/yanamaste14/yanamaste-live-set-27092020-khidi-club-tbilisi"],["Yanamaste - Rupor",101560,"https://soundcloud.com/yanamaste14/yanamaste-rupor"],["Yanamaste - Lahante",100925,"https://soundcloud.com/yanamaste14/yanamaste-lahante"],["Yanamaste 15 NOVEMBER 2019 @ KHIDI 中 with Ø [PHASE] & Jamaica Suk",50716,"https://soundcloud.com/yanamaste14/yanamasste-15-november-2019-khidi-with-o-phase-jamaica-suk"],["Yanamaste - Indecisive Move",46389,"https://soundcloud.com/yanamaste14/yanamaste-indecisive-move-1"],["Yanamaste - Walking on Mars [MR032]",39787,"https://soundcloud.com/yanamaste14/yanamaste-walking-on-mars"],["LSD",12091,"https://soundcloud.com/yanamaste14/lsd"],["Cirk",8366,"https://soundcloud.com/yanamaste14/cirk"]],"av":"https://i1.sndcdn.com/avatars-wEIkYSGQS8PFryhQ-fpm4IA-large.jpg","vis":"https://i1.sndcdn.com/visuals-000281117233-3L7cfL-original.jpg"}};
+
+// YouTube top videos (artist-matched sets · refreshed 2026-05-18)
+const YT_LIVE={"maryk":[{"id":"23PjKgt17VE","title":"Mary Lake | Boiler Room x Dekmantel Festival 2022","views":"44,981 views"},{"id":"bqEl2OryJww","title":"Dekmantel Festival 2022 x Bud: Mary Lake & Cinnaman","views":"35,083 views"},{"id":"sPRlca4bMnM","title":"Mary Lake | HÖR - Sep 12 / 2023","views":"10,626 views"}],"jakojako":[{"id":"nFVf5tYbWmI","title":"JakoJako | Boiler Room x INTRO Music Festival","views":"61,942 views"},{"id":"XKMSSGqc33Q","title":"JakoJako at RADAR | Dekmantel Festival 2025","views":"14,887 views"},{"id":"PU3yCq02d9E","title":"Ignez & JakoJako & Lady Starlight & Rødhåd & UFO95 8h Live At Stone Techno Festival 2025","views":"7,946 views"}],"vtl":[{"id":"wXdjZqiDQvk","title":"Voices From The Lake live at Dekmantel 2023","views":"2,655 views"},{"id":"4JmTWQucTug","title":"Voices From The Lake Feat. Donato Dozzy & Neel ‎: Voices From The Lake [@ 432 Hz]","views":"112,478 views"},{"id":"ZiMLuWOP_GQ","title":"21/09/15 - Voices From The Lake live @ Labyrinth Festival, Naeba, Japan","views":"48,274 views"}],"yanam":[{"id":"TghNAdW_rnA","title":"Yanamaste | Boiler Room x Glitch Festival 2024","views":"489,548 views"},{"id":"cfvPH6TT_Ag","title":"Night Service - Yanamaste | HÖR - Jun 29 / 2023","views":"299,089 views"},{"id":"IGM2gS6bCvw","title":"Yanamaste | Boiler Room Tbilisi: KHIDI","views":"144,763 views"}],"fredky":[{"id":"lVplrAFIjWQ","title":"FREDDY K | Boiler Room x Kompass","views":"163,442 views"},{"id":"CLDcCyRpoD4","title":"Dekmantel Ten - Freddy K | Radar - Aug 2 / 2024","views":"108,581 views"},{"id":"aCbguSP8Xxo","title":"DRIFT KYIV - Setaoc Mass | HÖR - Mar 1 / 2023","views":"108,135 views"}],"rhood":[{"id":"4CEo4XvM6Oc","title":"Floorplan (Robert Hood) | Boiler Room x Dekmantel Festival: Amsterdam","views":"1,440,637 views"},{"id":"Ow530rJ9W9w","title":"FLOORPLAN aka Robert Hood religious techno DJ set  @ Weather Festival Paris","views":"514,144 views"},{"id":"TaFJGvwaczU","title":"Robert Hood Boiler Room x Red Bull Music Academy DJ set","views":"600,345 views"}],"kyrak":[{"id":"HjeMtuVtenA","title":"Fuse w/ Kyra Khaldi @ Kiosk Radio 22.02.2025","views":"1,631 views"},{"id":"Rs-l47pNoks","title":"Kyra Khaldi b2b Moody Mehran @ Dockyard / Mystic Garden Festival Amsterdam ADE 2025","views":"44 views"}],"spray":[{"id":"FWkrxfjzylo","title":"Spray | Boiler Room: Brisbane","views":"68,528 views"},{"id":"eOVnVef7QF4","title":"Spray | Boiler Room x AVA Festival 2023","views":"62,122 views"},{"id":"hTvcV5OeH3E","title":"RA Live: Spray presents Spriitzz (Live) @ Waterworks Festival 2025","views":"32,186 views"}],"sallc":[{"id":"W8vA0TRx9ag","title":"Sally C | Boiler Room x AVA Festival 2019","views":"150,080 views"},{"id":"0vfJP1v954A","title":"Foundation FM - Sally C B2B Madam X | HÖR - Jan 20 / 2022","views":"85,137 views"},{"id":"u_htiouQfSQ","title":"HÖR 3 Years Anniversary - Sally C | HÖR - Jul 10 / 2022","views":"43,500 views"}],"benwal":[{"id":"PAEwXkzVyEw","title":"Benwal | Boiler Room x Glitch Festival 2025","views":"312,471 views"},{"id":"9uyuhS3yZzk","title":"Benwal at Glitch Festival 2024","views":"257 views"},{"id":"W7bOMBkGaVI","title":"Benwal [3 hour set] at Intercell x Benwal Invites | ADE 2024 Closing","views":"111,413 views"}],"xclub":[{"id":"5l3lrZPAjgA","title":"X CLUB. | Boiler Room: Sydney","views":"647,053 views"},{"id":"w0YzIGk1rVw","title":"X CLUB. | Boiler Room x AVA Festival 2023","views":"191,628 views"},{"id":"eLcbuQLSV-w","title":"X CLUB. | HÖR - Aug 15 / 2022","views":"53,977 views"}],"salute":[{"id":"rvGABUgyCOA","title":"salute | Boiler Room: Melbourne","views":"1,810,649 views"},{"id":"q3l5v6Kq9Zc","title":"DJ BORING b2b salute | Boiler Room x AVA Festival 2024","views":"186,911 views"},{"id":"QUVHdVmVKY4","title":"Joy Anonymous b2b Todd Edwards b2b salute | Mixmag x JOY (&Friends)","views":"175,828 views"}],"uberk":[{"id":"jB3B_x38ZBk","title":"BCCO - future.666 B2B ÜBERKIKZ | HÖR - June 20 / 2024","views":"98,955 views"},{"id":"0YKf96ytWy8","title":"ÜBERKIKZ | HÖR - January 29 / 2024","views":"98,760 views"},{"id":"BKYfa3f1mWg","title":"BCCO - ÜBERKIKZ | HÖR - December 3 / 2024","views":"56,548 views"}],"kink":[{"id":"osS2zsW8mLk","title":"KiNK | Boiler Room: Moscow","views":"2,850,919 views"},{"id":"Xmxc-fed_Lw","title":"KiNK | Boiler Room x Ballantine's True Music Valencia","views":"870,848 views"},{"id":"-0MoCENw8OQ","title":"Kink Boiler Room London Live Set","views":"384,297 views"}],"phpacho":[{"id":"1qSrSJTIfuU","title":"positivesource - Philippa Pacho | HÖR - Jul 6 / 2022","views":"129,745 views"},{"id":"75mxRg7ucx4","title":"Philippa Pacho | Boiler Room x Glitch Festival 2025","views":"95,297 views"},{"id":"_jDI2e5o83Q","title":"Philippa Pacho at Boiler Room: Malta","views":"29,737 views"}],"chlstr":[{"id":"Xy_YQtgzFY0","title":"Chlär | Boiler Room x Glitch Festival 2023","views":"637,047 views"},{"id":"oku_XeRtC1U","title":"Chlär B2B Frederic / March 9 / 8pm-9pm","views":"182,072 views"},{"id":"Pu7TQqlNipE","title":"Chlär B2B Frederic. | HÖR - Jan 29 / 2022","views":"120,319 views"}],"dkolo":[{"id":"v-SzPfrWYAM","title":"Daria Kolosova | Boiler Room Festival Berlin","views":"895,069 views"},{"id":"h2UwuQxyBGc","title":"Daria Kolosova | Boiler Room: Belgrade at Drugstore","views":"211,320 views"},{"id":"KWUyhLTp_DE","title":"Daria Kolosova | Mixmag Lab Awakenings","views":"174,996 views"}],"sybil":[{"id":"r2sbyPPeJRY","title":"Sybil at Dekmantel Ten 2024","views":"649 views"},{"id":"jImr7jJLn6c","title":"Sybil @ Brilliant Corners 11.08.19 | RA Live","views":"140 views"},{"id":"uudcNwqY7QY","title":"Sybil @ Kiosk Radio 24.03.2025","views":"1,369 views"}],"fdw":[{"id":"2umna0MH3vs","title":"[FOMO_LIVE] 002 - Carrier b2b Forest Drive West","views":"167 views"}],"spekki":[{"id":"4FD0xFVUqUQ","title":"Spekki Webu | Boiler Room x DGTL Amsterdam 2023","views":"66,031 views"},{"id":"5ZJKKB69_Kw","title":"Dekmantel Ten - Spekki Webu | Radar - Aug 2 / 2024","views":"17,387 views"},{"id":"aderFzPfhJI","title":"The Crave Festival - Spekki Webu B2B JEANS (LIVE) | HÖR - Jun4 / 2022","views":"16,580 views"}],"uziq":[{"id":"KVa_xXyJ3es","title":"µ-Ziq | Boiler Room x Eristoff x Funkroom: Vienna","views":"34,903 views"},{"id":"GgO81t0H6-E","title":"µ-Ziq live at Boiler Room Vienna","views":"8,971 views"},{"id":"_8nTonztQBs","title":"U-Ziq - Catkin And Teasel (Boiler Room Remix)","views":"607 views"}],"darwin":[{"id":"qwY6sqijbbs","title":"Darwin | Boiler Room x Sugar Mountain 2023","views":"140,417 views"},{"id":"t6JGn_FI5Uo","title":"REEF - Darwin | HÖR - Nov 3 / 2022","views":"136,670 views"},{"id":"gMWUlpIPqg0","title":"Darwin & re:ni | Boiler Room x Dekmantel 2019","views":"70,305 views"}],"djrum":[{"id":"jIyjNUoGKP0","title":"Djrum | Boiler Room: London","views":"164,668 views"},{"id":"cm5IiwvR_DI","title":"Djrum at RADAR | Dekmantel Festival 2025","views":"25,028 views"},{"id":"NnABCsAdD48","title":"Djrum at Dekmantel Festival 2023","views":"2,801 views"}],"dozzy":[{"id":"Dhzp6esYfeY","title":"Donato Dozzy | Boiler Room: Rome","views":"829,207 views"},{"id":"u_INEDtSnN8","title":"Donato Dozzy at Dekmantel Festival 2019","views":"12,589 views"},{"id":"xIJxDDP4_0s","title":"Donato Dozzy - C - A2﻿ - Live @ Dekmantel Festival 2015","views":"1,862 views"}],"jetti":[{"id":"H1VuhkKQ5uA","title":"Jetti & Post | HÖR - Jan 28 / 2023","views":"25,925 views"}],"d6teen":[{"id":"U0phE35KEYw","title":"PhonoVision - DJ Sweet6teen | HÖR - Oct 28 / 2022","views":"54,541 views"},{"id":"2CylnyzQMiU","title":"DJ Sweet6teen - The Lot Radio (19.12.2024)","views":"7 views"},{"id":"Z3ZRpNxTo7Q","title":"Paradise City w/ DJ Sweet6teen @ Kiosk Radio 28.06.2024","views":"4,953 views"}],"reyco":[{"id":"tFFnMF-KzAg","title":"Evan Baggs & Rey Colino at RADAR | Dekmantel Festival 2025","views":"38,773 views"},{"id":"GcWjJyuWyig","title":"Rey Colino | Listen! x Boiler Room","views":"24,786 views"},{"id":"tqIImQ0r8EM","title":"Evan Baggs & Rey Colino | Dekmantel Festival 2025","views":"4,196 views"}],"oceanic":[{"id":"AuDlpNS7HaI","title":"Oceanic | Boiler Room x Dekmantel Festival 2022","views":"28,331 views"},{"id":"TeUs0OEOnyQ","title":"Oceanic's stemmenhouse komt tot leven op Dekmantel","views":"1,807 views"},{"id":"l4Ht4djN2hI","title":"Oceanic @ Dekmantel 2022","views":"11 views"}],"kia":[{"id":"MVWKMKKGK9k","title":"KIA @ MAKING TIME ♾️ 2024","views":"9,646 views"},{"id":"EM9LAai6pso","title":"Kia b2b deep creep @TheLotRadio 11-03-2023","views":"7,604 views"},{"id":"uogp2cl9jBM","title":"Abrupt Festival w/ Kia @ Kiosk Radio 10.10.2025","views":"3,542 views"}],"carista":[{"id":"GwDWGV9yuzA","title":"Carista | Boiler Room x Dekmantel Festival 2018","views":"598,897 views"},{"id":"4S4BwPDtxHw","title":"Dekmantel Ten - CARISTA | Radar - Aug 4 / 2024","views":"44,758 views"},{"id":"e_iD2OeO1iY","title":"Carista | Boiler Room x AVA Festival 2021","views":"37,484 views"}]};
+
+// ── helpers ──────────────────────────────────────────────────────
+const col=id=>ST[id]?.c||'#888';
+const stn=id=>ST[id]?.n||id;
+
+function ini(n){
+  return n.replace(/\(.*?\)/g,'').split(/[\s&b2]+/).filter(w=>/[a-zA-Zµ]/.test(w)).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+}
+
+function jsAttrStr(s){
+  return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+}
+
+function fmt(n){
+  if(!n||n<=0)return'—';
+  if(n>=1000000)return(n/1e6).toFixed(1)+'M';
+  if(n>=1000)return(n>=10000?Math.round(n/1000):(n/1000).toFixed(1))+'K';
+  return String(n);
+}
+
+function bars(v,max,c){
+  const f=v<=0?0:Math.max(1,Math.min(5,Math.round(Math.log10(Math.max(v,1))/Math.log10(max)*5)));
+  return Array.from({length:5},(_,i)=>`<div class="sb" style="background:${i<f?c:'rgba(255,255,255,.07)'}"></div>`).join('');
+}
+
+function scSlug(a){
+  const raw=(a.sc||'').trim();
+  if(!raw)return '';
+  if(raw.includes('soundcloud.com')){
+    const m=raw.match(/soundcloud\.com\/([^/?#]+)/i);
+    return m?m[1]:raw;
+  }
+  return raw.replace(/^@/,'');
+}
+
+function scProfileUrl(a){
+  const s=scSlug(a);
+  return s?`https://soundcloud.com/${s}`:'';
+}
+
+function scEmbedUrl(a,trackUrl='',autoplay=false){
+  const s=scSlug(a);
+  if(!s&&!trackUrl)return '';
+  const c=col(a.stage).replace('#','');
+  const target=trackUrl||`https://soundcloud.com/${s}`;
+  const play=autoplay?'true':'false';
+  return `https://w.soundcloud.com/player/?url=${encodeURIComponent(target)}&color=${c}&auto_play=${play}&hide_related=false&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&single_active=false`;
+}
+
+function scTrackUrl(s){
+  if(!s)return '';
+  if(s.permalink_url)return s.permalink_url;
+  if(s.uri&&String(s.uri).startsWith('http'))return s.uri;
+  if(s.uri)return 'https://soundcloud.com'+s.uri;
+  if(s.id)return `https://api.soundcloud.com/tracks/${s.id}`;
+  return '';
+}
+
+function trackEmbedBlocked(s){
+  if(!s)return true;
+  if(s.sharing==='private')return true;
+  const e=s.embeddable_by;
+  return !!(e&&e!=='all');
+}
+
+function trackPlayable(s){
+  if(!s||trackEmbedBlocked(s))return false;
+  return !!(s.title&&scTrackUrl(s));
+}
+
+function scSoundsFromCache(slug){
+  const d=slug&&SC_LIVE[slug];
+  if(!d?.tops?.length)return [];
+  return d.tops.map(row=>({
+    title:row[0],
+    playback_count:row[1],
+    permalink_url:row[2],
+    streamable:true,
+  }));
+}
+
+function ytVideos(a){
+  return YT_LIVE[a?.id]||[];
+}
+
+function embedOrigin(){
+  const o=location.origin;
+  return o&&o!=='null'?o:'https://localhost';
+}
+
+function ytEmbedSrc(id,autoplay=true){
+  const ap=autoplay?'&autoplay=1':'';
+  const origin=`&origin=${encodeURIComponent(embedOrigin())}`;
+  return `https://www.youtube.com/embed/${id}?enablejsapi=1&rel=0&modestbranding=1${origin}${ap}`;
+}
+
+function ytPlayerHtml(id,autoplay){
+  const open=`<a class="yt-open" href="https://www.youtube.com/watch?v=${id}" target="_blank" rel="noopener">Open on YouTube ↗</a>`;
+  const iframe=`<iframe src="${ytEmbedSrc(id,autoplay)}" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture;web-share" allowfullscreen title="YouTube"></iframe>`;
+  return iframe+open;
+}
+
+function pauseYouTube(){
+  document.querySelectorAll('#ytPlayer iframe').forEach(fr=>{
+    try{
+      fr.contentWindow?.postMessage(JSON.stringify({event:'command',func:'pauseVideo',args:''}),'*');
+    }catch(_){}
+  });
+  ytPlaying=false;
+  syncPlayerTransport();
+}
+
+function pauseSoundCloud(){
+  if(!widget)return;
+  try{widget.pause();}catch(_){}
+  playing=false;
+  syncPlayerTransport();
+}
+
+function stopOtherMedia(active){
+  if(active!=='sc')pauseSoundCloud();
+  if(active!=='yt')pauseYouTube();
+}
+
+function listenHubHtml(a,stageColor){
+  const vids=ytVideos(a);
+  const scUrl=scEmbedUrl(a);
+  const hasYt=vids.length>0;
+  const hasSc=!!scUrl;
+  if(!hasYt&&!hasSc)return '';
+
+  const ytList=hasYt?vids.map((v,i)=>`<button type="button" class="q-item${i===ytIdx?' on':''}" onclick="playYtVideo('${v.id}',${i})">
+    <span class="q-item-n">${v.title}</span>
+    ${v.views?`<span class="q-item-m">${v.views}</span>`:''}
+  </button>`).join(''):'<p class="listen-empty">No videos in catalog</p>';
+
+  const tabYt=hasYt?`<button type="button" class="listen-tab${listenTab==='yt'?' on':''}" data-tab="yt" onclick="setListenTab('yt')">YouTube</button>`:'';
+  const tabSc=hasSc?`<button type="button" class="listen-tab${listenTab==='sc'?' on':''}" data-tab="sc" onclick="setListenTab('sc')">SoundCloud</button>`:'';
+
+  const panelYt=hasYt?`<div class="listen-panel${listenTab==='yt'?' on':''}" data-panel="yt">
+    <div class="listen-stage"><div id="ytPlayer" class="listen-player"></div></div>
+    <div class="listen-queue">${ytList}</div>
+  </div>`:'';
+
+  const panelSc=hasSc?`<div class="listen-panel${listenTab==='sc'?' on':''}" data-panel="sc">
+    <div class="listen-stage listen-stage--sc">
+      <div class="listen-sc-embed"><iframe id="scEmbed" height="152" scrolling="no" allow="autoplay" src="${scUrl}"></iframe></div>
+    </div>
+    <div class="listen-queue listen-queue--sc">
+      <div class="listen-queue-hdr">
+        <span class="sec" style="margin:0">Tracks</span>
+        <div class="trk-sort">
+          <button type="button" class="tsrt${trkSort==='plays'?' on':''}" data-ts="plays" onclick="setTrkSort('plays',this)">Plays</button>
+          <button type="button" class="tsrt${trkSort==='title'?' on':''}" data-ts="title" onclick="setTrkSort('title',this)">Title</button>
+          <button type="button" class="tsrt${trkSort==='duration'?' on':''}" data-ts="duration" onclick="setTrkSort('duration',this)">Length</button>
+        </div>
+      </div>
+      <div class="sc-note" id="scNote"></div>
+      <div class="tracks" id="tracks"></div>
+    </div>
+  </div>`:'';
+
+  return `<section class="listen" id="listenHub" style="--listen-accent:${stageColor}">
+    <div class="listen-hdr">
+      <span class="listen-title">Listen</span>
+      <div class="listen-tabs">${tabYt}${tabSc}</div>
+    </div>
+    <div class="listen-body">${panelYt}${panelSc}</div>
+    <p class="listen-hint">Now playing syncs with the bar below · one source at a time</p>
+  </section>`;
+}
+
+function applyListenTabUI(tab){
+  document.querySelectorAll('.listen-tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  document.querySelectorAll('.listen-panel').forEach(p=>p.classList.toggle('on',p.dataset.panel===tab));
+}
+
+function setListenTab(tab){
+  if(tab===listenTab)return;
+  if(tab==='sc')pauseYouTube();
+  if(tab==='yt'&&playing)pauseSoundCloud();
+  listenTab=tab;
+  applyListenTabUI(tab);
+  syncPlayerTransport();
+}
+
+function syncPlayerTransport(){
+  const srcEl=document.getElementById('playerSource');
+  const trackEl=document.getElementById('playerTrack');
+  const btnPlay=document.getElementById('btnPlay');
+  const a=A.find(x=>x.id===sel);
+  if(!srcEl||!trackEl||!btnPlay)return;
+
+  if(mediaSource==='yt'){
+    const vids=a?ytVideos(a):[];
+    const v=vids[ytIdx];
+    srcEl.className='psrc psrc--yt';
+    srcEl.textContent='YouTube';
+    trackEl.textContent=v?.title||'Video';
+    btnPlay.textContent=ytPlaying?'⏸':'▶';
+    btnPlay.title=ytPlaying?'Pause video':'Play video';
+    document.getElementById('btnPrevT').disabled=!vids.length;
+    document.getElementById('btnNextT').disabled=!vids.length;
+  }else if(mediaSource==='sc'){
+    const s=sounds[trackIdx];
+    srcEl.className='psrc psrc--sc';
+    srcEl.textContent='SoundCloud';
+    trackEl.textContent=s?.title||'Track';
+    btnPlay.textContent=playing?'⏸':'▶';
+    btnPlay.title=playing?'Pause':'Play';
+    document.getElementById('btnPrevT').disabled=!widgetReady||!sounds.length;
+    document.getElementById('btnNextT').disabled=!widgetReady||!sounds.length;
+  }else{
+    srcEl.className='psrc psrc--idle';
+    srcEl.textContent='Ready';
+    const canYt=listenTab==='yt'&&a&&ytVideos(a).length;
+    const canSc=listenTab==='sc'&&widgetReady&&sounds.length;
+    trackEl.textContent=canYt?'Pick a video above':canSc?'Pick a track above':'Select a video or track';
+    btnPlay.textContent='▶';
+    btnPlay.title='Play / pause';
+    document.getElementById('btnPrevT').disabled=!canYt&&!canSc;
+    document.getElementById('btnNextT').disabled=!canYt&&!canSc;
+  }
+}
+
+
+function trackPopularity(s){
+  if(!s)return 0;
+  return s.playback_count
+    ||s.favoritings_count
+    ||s.likes_count
+    ||s.reposts_count
+    ||0;
+}
+
+function sortSoundsByPopularity(list){
+  return [...list].sort((a,b)=>{
+    const d=trackPopularity(b)-trackPopularity(a);
+    if(d)return d;
+    return (a.title||'').localeCompare(b.title||'');
+  });
+}
+
+function applyTrkSort(list){
+  if(!list?.length)return list||[];
+  if(trkSort==='title')return [...list].sort((a,b)=>(a.title||'').localeCompare(b.title||''));
+  if(trkSort==='duration')return [...list].sort((a,b)=>(b.duration||0)-(a.duration||0));
+  return sortSoundsByPopularity(list);
+}
+
+function setTrkSort(mode,btn){
+  trkSort=mode;
+  document.querySelectorAll('.tsrt').forEach(b=>b.classList.toggle('on',b.dataset.ts===mode));
+  if(!sounds.length)return;
+  const cur=sounds[trackIdx];
+  sounds=applyTrkSort(sounds);
+  const ni=indexInSounds(cur);
+  trackIdx=ni>=0?ni:firstPlayableIdx();
+  renderTracks();
+}
+
+function soundKey(s){
+  if(!s)return '';
+  if(s.id!=null)return String(s.id);
+  return scTrackUrl(s);
+}
+
+function indexInSounds(sound){
+  const k=soundKey(sound);
+  if(!k)return -1;
+  return sounds.findIndex(s=>soundKey(s)===k);
+}
+
+function firstPlayableIdx(){
+  const i=sounds.findIndex(trackPlayable);
+  return i>=0?i:0;
+}
+
+function scPhotoFromCache(a){
+  const slug=scSlug(a);
+  const d=slug&&SC_LIVE[slug];
+  if(!d)return '';
+  if(d.av&&!String(d.av).includes('default_avatar'))return d.av;
+  if(d.vis)return d.vis;
+  return '';
+}
+
+function photoUrl(a,idx=0){
+  if(a.img&&!idx)return a.img;
+  if(a.photos?.[idx])return a.photos[idx];
+  if(!idx){
+    const sc=scPhotoFromCache(a);
+    if(sc)return sc;
+  }
+  const s=scSlug(a);
+  if(a.ig_h&&!idx)return `https://unavatar.io/instagram/${encodeURIComponent(a.ig_h)}`;
+  if(s&&!idx)return `https://unavatar.io/soundcloud/${encodeURIComponent(s)}`;
+  return '';
+}
+
+const SC_API='https://api-widget.soundcloud.com';
+const SC_CID='gxPRNsEq7CDD7Wvem4iymWOq3YfU7KS8';
+
+function scCached(a){
+  const slug=scSlug(a);
+  return slug?SC_LIVE[slug]:null;
+}
+
+function scCompareText(a, scFollowers){
+  if(!scFollowers||!a)return '';
+  const sc=scFollowers, ig=a.ig||0;
+  if(ig>0&&sc>ig*1.5&&sc>15000)
+    return `${fmt(sc)} SC followers — a deep mix archive beyond the ${fmt(ig)} Instagram audience.`;
+  if(sc>80000)
+    return `${fmt(sc)} SoundCloud followers — a major catalog. For this lineup, SC is the number that actually reflects their reach.`;
+  if(sc>12000)
+    return `${fmt(sc)} SC followers — sets, uploads, and plays tell the story streaming charts miss.`;
+  return '';
+}
+
+function scHeroHtml(a){
+  const slug=scSlug(a);
+  const profile=scProfileUrl(a);
+  if(!slug)return '';
+  const d=scCached(a);
+  if(!d||d.err)return `<div class="sc-hero" id="scHero"><div class="sc-brand">SoundCloud</div><div class="sc-footnote">No public profile linked for this slot.</div></div>`;
+
+  const top=d.top?`<div class="sc-top"><span class="sc-top-lbl">Top track</span><span class="sc-top-title">${d.top[0]}</span><span class="sc-top-plays">${fmt(d.top[1])} plays</span></div>`:'';
+  const compare=scCompareText(a,d.f);
+  const city=d.c?`<span style="color:var(--mu)"> · ${d.c}</span>`:'';
+
+  return `<div class="sc-hero" id="scHero">
+    <div class="sc-hero-hdr">
+      <span class="sc-brand">SoundCloud</span>
+      ${profile?`<a class="sc-profile-link" href="${profile}" target="_blank" rel="noopener">@${slug} ↗</a>`:''}
+    </div>
+    <div class="sc-grid">
+      <div class="sc-cell sc-cell--lead"><div class="sl">Followers</div><div class="sv">${fmt(d.f)}</div></div>
+      <div class="sc-cell"><div class="sl">Total plays</div><div class="sv">${fmt(d.p)}</div></div>
+      <div class="sc-cell"><div class="sl">Tracks</div><div class="sv">${d.tc||'—'}</div></div>
+      <div class="sc-cell"><div class="sl">Track likes</div><div class="sv">${fmt(d.tl)}</div></div>
+      ${top}
+    </div>
+    ${compare?`<div class="sc-compare">${compare}</div>`:''}
+    <div class="sc-footnote">Catalog totals from public uploads${city} · 17 May 2026 · player below is live</div>
+  </div>`;
+}
+
+function trackPlaysLabel(s){
+  const n=s?.playback_count??s?.play_count;
+  if(!n)return '';
+  return `<span class="trk-p">${fmt(n)}</span>`;
+}
+
+
+// ── genre families (refine + chips) ──────────────────────────────
+const GENRE_FAMILIES=[
+  {id:'techno',label:'Techno',kw:['techno','industrial','acid','hardcore','minimal','peak','trance','electro','rave','hard dance']},
+  {id:'house',label:'House / Disco',kw:['house','disco','garage','ukg','uk garage','funk','soulful','italo','hyperpop']},
+  {id:'ambient',label:'Ambient / Dub',kw:['ambient','dub','downtempo','experimental','modular','leftfield','drone','idm','electronic']},
+  {id:'breaks',label:'Breaks / Bass',kw:['break','drum','dnb','jungle','bass','grime','footwork','broken beat','broken']},
+  {id:'live',label:'Live / Hybrid',kw:['live','hybrid','av ','performance','electroacoustic']},
+  {id:'other',label:'Other',kw:[]},
+];
+
+function allLineupGenres(){
+  const s=new Set();
+  for(const a of A)for(const g of (a.genres||[]))if(g)s.add(g);
+  return [...s].sort((a,b)=>a.localeCompare(b));
+}
+
+function genreFamilyOf(genre){
+  const g=(genre||'').toLowerCase();
+  for(const f of GENRE_FAMILIES){
+    if(f.id==='other')continue;
+    if(f.kw.some(k=>{
+      if(k==='electro'&&g.includes('electronic'))return false;
+      return g.includes(k);
+    }))return f.id;
+  }
+  return 'other';
+}
+
+function genreFamilyLabel(id){
+  return GENRE_FAMILIES.find(f=>f.id===id)?.label||id;
+}
+
+function artistGenreFamilies(a){
+  const s=new Set();
+  for(const g of (a.genres||[]))s.add(genreFamilyOf(g));
+  return s;
+}
+
+// ── sort / filter ────────────────────────────────────────────────
+let sortBy='lineup', sortDir='asc';
+const tagFilt=new Set();
+const genreFamilyFilt=new Set();
+let exactGenreFilt='';
+let qSearch='';
+
+const SORT_LABELS={lineup:'lineup',scf:'SC',scp:'plays',ra:'RA',ig:'IG',name:'A–Z'};
+const SORT_NAMES={lineup:'Lineup',scf:'SC followers',scp:'SC plays',ra:'RA',ig:'Instagram',name:'Name'};
+const TAG_LABELS={hl:'Headliner',live:'Live',warm:'Warm-up',local:'NL',sc:'SC'};
+
+function lineupIdx(a){return A.findIndex(x=>x.id===a.id)}
+function statScF(a){return scCached(a)?.f||0}
+function statScP(a){return scCached(a)?.p||0}
+function statRa(a){return a.ra||0}
+function statIg(a){return a.ig||0}
+function matchesTagFilt(a){
+  if(!tagFilt.size)return true;
+  for(const t of tagFilt){
+    if(t==='hl'&&!a.hl)return false;
+    if(t==='live'&&!a.live)return false;
+    if(t==='warm'&&!a.warm)return false;
+    if(t==='local'&&!a.local)return false;
+    if(t==='sc'&&!scSlug(a))return false;
+  }
+  return true;
+}
+
+function matchesGenreFilt(a){
+  if(exactGenreFilt){
+    return (a.genres||[]).some(g=>g.toLowerCase()===exactGenreFilt.toLowerCase());
+  }
+  if(!genreFamilyFilt.size)return true;
+  const fam=artistGenreFamilies(a);
+  for(const id of genreFamilyFilt){
+    if(fam.has(id))return true;
+  }
+  return false;
+}
+
+function hasActiveRefine(){
+  return tagFilt.size>0||genreFamilyFilt.size>0||!!exactGenreFilt;
+}
+
+function matchesSearch(a){
+  if(!qSearch)return true;
+  const q=qSearch.toLowerCase();
+  const sc=scSlug(a);
+  const city=(scCached(a)?.c||'').toLowerCase();
+  return a.name.toLowerCase().includes(q)
+    ||a.origin.toLowerCase().includes(q)
+    ||city.includes(q)
+    ||(a.genres||[]).some(g=>g.toLowerCase().includes(q))
+    ||(sc&&sc.toLowerCase().includes(q));
+}
+
+function stageArtists(){
+  return filt==='all'?A:A.filter(a=>a.stage===filt);
+}
+
+function displayedArtists(){
+  let list=stageArtists().filter(a=>matchesTagFilt(a)&&matchesGenreFilt(a)&&matchesSearch(a));
+  if(sortBy==='lineup'){
+    list.sort((a,b)=>lineupIdx(a)-lineupIdx(b));
+    return list;
+  }
+  const dir=sortDir==='desc'?-1:1;
+  const cmpNum=(va,vb)=>((va||0)-(vb||0))*dir;
+  list=[...list].sort((a,b)=>{
+    let d=0;
+    switch(sortBy){
+      case 'scf': d=cmpNum(statScF(a),statScF(b)); break;
+      case 'scp': d=cmpNum(statScP(a),statScP(b)); break;
+      case 'ra': d=cmpNum(statRa(a),statRa(b)); break;
+      case 'ig': d=cmpNum(statIg(a),statIg(b)); break;
+      case 'name': return dir*a.name.localeCompare(b.name);
+    }
+    return d||a.name.localeCompare(b.name);
+  });
+  return list;
+}
+
+function sortStatDisplay(a){
+  switch(sortBy){
+    case 'scf': return {v:fmt(statScF(a)),c:'#ff5500'};
+    case 'scp': return {v:fmt(statScP(a)),c:'#ff9a5c'};
+    case 'ra': return {v:fmt(statRa(a)),c:col(a.stage)};
+    case 'ig': return {v:fmt(statIg(a)),c:col(a.stage)};
+    case 'name': return {v:a.name.split(/[\s(]/)[0],c:'var(--mu)'};
+    default: return null;
+  }
+}
+
+function updateListCount(){
+  const el=document.getElementById('listCount');
+  if(!el)return;
+  const n=displayedArtists().length;
+  const total=stageArtists().length;
+  const parts=[n===total?`${n} artists`:`${n} / ${total}`];
+  if(sortBy!=='lineup')parts.push(sortDir==='desc'?'↓':'↑');
+  el.textContent=parts.join(' · ');
+}
+
+function closePanels(except){
+  if(except!=='sort'){
+    document.getElementById('sortMenu')?.setAttribute('hidden','');
+    document.getElementById('sortBtn')?.classList.remove('open');
+    document.getElementById('sortBtn')?.setAttribute('aria-expanded','false');
+  }
+  if(except!=='refine'){
+    document.getElementById('refinePanel')?.setAttribute('hidden','');
+    document.getElementById('refineBtn')?.classList.remove('open');
+    document.getElementById('refineBtn')?.setAttribute('aria-expanded','false');
+  }
+}
+
+function toggleSortMenu(e){
+  e.stopPropagation();
+  const menu=document.getElementById('sortMenu');
+  const btn=document.getElementById('sortBtn');
+  const open=menu?.hasAttribute('hidden');
+  closePanels(open?'sort':null);
+  if(open){
+    menu.removeAttribute('hidden');
+    btn.classList.add('open');
+    btn.setAttribute('aria-expanded','true');
+  }
+}
+
+function toggleRefine(e){
+  e.stopPropagation();
+  const panel=document.getElementById('refinePanel');
+  const btn=document.getElementById('refineBtn');
+  const open=panel?.hasAttribute('hidden');
+  closePanels(open?'refine':null);
+  if(open){
+    panel.removeAttribute('hidden');
+    btn.classList.add('open');
+    btn.setAttribute('aria-expanded','true');
+  }
+}
+
+function pickSort(metric){
+  if(sortBy===metric&&metric!=='lineup'){
+    sortDir=sortDir==='desc'?'asc':'desc';
+  }else{
+    sortBy=metric;
+    sortDir=metric==='name'?'asc':'desc';
+  }
+  refreshSortUI();
+  closePanels();
+  applyListControls();
+}
+
+function refreshSortUI(){
+  const arr=sortBy!=='lineup'?(sortDir==='desc'?' ↓':' ↑'):'';
+  const btn=document.getElementById('sortBtn');
+  if(btn)btn.textContent='Sort · '+(SORT_NAMES[sortBy]||sortBy)+arr;
+  document.querySelectorAll('.dd-item').forEach(b=>{
+    const on=b.dataset.sort===sortBy;
+    b.classList.toggle('on',on);
+    const base=b.textContent.replace(/\s[↑↓]$/,'').trim();
+    const label=SORT_NAMES[b.dataset.sort]||base;
+    if(on&&sortBy!=='lineup')b.textContent=label+(sortDir==='desc'?' ↓':' ↑');
+    else b.textContent=label;
+  });
+}
+
+function genreSelectValue(){
+  if(exactGenreFilt)return 'g:'+exactGenreFilt;
+  if(genreFamilyFilt.size===1)return 'f:'+[...genreFamilyFilt][0];
+  return '';
+}
+
+function refreshRefineUI(){
+  document.querySelectorAll('.ft[data-t]').forEach(b=>{
+    b.classList.toggle('on',tagFilt.has(b.dataset.t));
+  });
+  const sel=document.getElementById('genreSelect');
+  if(sel){
+    const v=genreSelectValue();
+    if(sel.value!==v)sel.value=v;
+  }
+  const rb=document.getElementById('refineBtn');
+  if(rb)rb.classList.toggle('has-filt',hasActiveRefine());
+}
+
+function setTag(tag,btn){
+  if(tagFilt.has(tag))tagFilt.delete(tag);
+  else tagFilt.add(tag);
+  if(btn)btn.classList.toggle('on',tagFilt.has(tag));
+  else document.querySelectorAll(`.ft[data-t="${tag}"]`).forEach(b=>b.classList.toggle('on',tagFilt.has(tag)));
+  refreshRefineUI();
+  renderActiveChips();
+  syncUrlState();
+  applyListControls();
+}
+
+function onGenreSelect(el){
+  const v=el.value;
+  exactGenreFilt='';
+  genreFamilyFilt.clear();
+  if(v.startsWith('f:'))genreFamilyFilt.add(v.slice(2));
+  else if(v.startsWith('g:'))exactGenreFilt=v.slice(2);
+  refreshRefineUI();
+  renderActiveChips();
+  syncUrlState();
+  applyListControls();
+}
+
+function filterByGenre(genre){
+  const sameExact=exactGenreFilt&&exactGenreFilt.toLowerCase()===genre.toLowerCase();
+  exactGenreFilt=sameExact?'':genre;
+  if(!sameExact)genreFamilyFilt.clear();
+  refreshRefineUI();
+  renderActiveChips();
+  syncUrlState();
+  applyListControls();
+}
+
+function clearRefine(){
+  tagFilt.clear();
+  genreFamilyFilt.clear();
+  exactGenreFilt='';
+  refreshRefineUI();
+  renderActiveChips();
+  syncUrlState();
+  applyListControls();
+}
+
+function removeChip(type,value){
+  if(type==='tag')tagFilt.delete(value);
+  else if(type==='genre')genreFamilyFilt.delete(value);
+  else if(type==='exact')exactGenreFilt='';
+  refreshRefineUI();
+  renderActiveChips();
+  syncUrlState();
+  applyListControls();
+}
+
+function renderActiveChips(){
+  const bar=document.getElementById('chipbar');
+  if(!bar)return;
+  const chips=[];
+  for(const t of tagFilt){
+    chips.push({type:'tag',value:t,label:TAG_LABELS[t]||t});
+  }
+  if(exactGenreFilt){
+    chips.push({type:'exact',value:exactGenreFilt,label:exactGenreFilt});
+  }else{
+    for(const g of genreFamilyFilt){
+      chips.push({type:'genre',value:g,label:genreFamilyLabel(g)});
+    }
+  }
+  if(!chips.length){
+    bar.innerHTML='';
+    bar.setAttribute('hidden','');
+    updateTopChrome();
+    return;
+  }
+  bar.removeAttribute('hidden');
+  bar.innerHTML=chips.map(c=>
+    `<button type="button" class="chip" onclick="removeChip('${jsAttrStr(c.type)}','${jsAttrStr(c.value)}')">${c.label}<span class="chip-x">×</span></button>`
+  ).join('')+`<button type="button" class="chip-clear" onclick="clearRefine()">Clear</button>`;
+  updateTopChrome();
+}
+
+function updateTopChrome(){
+  const el=document.getElementById('topChrome');
+  if(!el)return;
+  const h=el.offsetHeight||220;
+  document.documentElement.style.setProperty('--top-chrome',h+'px');
+  if(isMobile())document.documentElement.style.setProperty('--chrome',h+'px');
+}
+
+function buildGenreSelect(){
+  const el=document.getElementById('genreSelect');
+  if(!el)return;
+  const fam=GENRE_FAMILIES.filter(f=>f.id!=='other').map(f=>
+    `<option value="f:${f.id}">${f.label}</option>`
+  ).join('');
+  const genres=allLineupGenres().map(g=>
+    `<option value="g:${jsAttrStr(g)}">${g}</option>`
+  ).join('');
+  el.innerHTML=`<option value="">All genres</option><optgroup label="Style">${fam}</optgroup><optgroup label="Genre">${genres}</optgroup>`;
+  const v=genreSelectValue();
+  if(v)el.value=v;
+}
+
+function syncUrlState(){
+  const p=new URLSearchParams();
+  if(filt!=='all')p.set('stage',filt);
+  if(sortBy!=='lineup')p.set('sort',sortBy+(sortDir==='desc'?':desc':''));
+  if(qSearch)p.set('q',qSearch);
+  if(tagFilt.size)p.set('tags',[...tagFilt].join(','));
+  if(exactGenreFilt)p.set('genre',exactGenreFilt);
+  else if(genreFamilyFilt.size)p.set('gf',[...genreFamilyFilt].join(','));
+  const qs=p.toString();
+  const hash=qs?'#'+qs:'';
+  if(location.hash!==hash)history.replaceState(null,'',hash||location.pathname+location.search);
+}
+
+function readUrlState(){
+  const raw=location.hash.replace(/^#/,'');
+  if(!raw)return;
+  const p=new URLSearchParams(raw);
+  const stage=p.get('stage');
+  if(stage){
+    const fb=document.querySelector(`.fb[data-s="${stage}"]`);
+    if(fb)go(stage,fb);
+  }
+  const sort=p.get('sort');
+  if(sort){
+    const [m,dir]=sort.split(':');
+    if(SORT_NAMES[m]){
+      sortBy=m;
+      sortDir=dir==='desc'?'desc':'asc';
+    }
+  }
+  const q=p.get('q');
+  if(q){
+    qSearch=q;
+    const inp=document.getElementById('qSearch');
+    if(inp)inp.value=q;
+  }
+  const tags=p.get('tags');
+  if(tags)tags.split(',').forEach(t=>{if(TAG_LABELS[t])tagFilt.add(t);});
+  const gf=p.get('gf');
+  if(gf)gf.split(',').forEach(g=>{if(GENRE_FAMILIES.some(f=>f.id===g))genreFamilyFilt.add(g);});
+  const genre=p.get('genre');
+  if(genre)exactGenreFilt=genre;
+}
+
+function setSearch(v){
+  qSearch=(v||'').trim();
+  syncUrlState();
+  applyListControls();
+}
+
+function applyListControls(){
+  const list=displayedArtists();
+  if(sel&&!list.some(a=>a.id===sel))sel=null;
+  ensureSelection();
+  updateListCount();
+  refreshSortUI();
+  refreshRefineUI();
+  renderActiveChips();
+  renderStoryCtx();
+  renderList();
+  renderDetail();
+  updatePlayerMeta();
+}
+
+
+// ── state ────────────────────────────────────────────────────────
+let filt='all', sel=null;
+let widget=null, sounds=[], trackIdx=0, playing=false, heroPhotoIdx=0;
+let widgetReady=false, scNote='', pendingMediaAutoplay=null;
+let trkSort='plays', ytIdx=0;
+let listenTab='yt', mediaSource=null, ytPlaying=false;
+
+// mobile split pane (list ↔ detail)
+const SPLIT={list:.56,mid:.34,detail:.17};
+let splitPct=SPLIT.mid;
+let splitDrag=null,splitMoved=false;
+
+function isMobile(){return window.matchMedia('(max-width:768px)').matches;}
+
+function applySplit(animate){
+  const layout=document.getElementById('layout');
+  const handle=document.getElementById('splitHandle');
+  if(!layout||!isMobile())return;
+  const h=layout.getBoundingClientRect().height;
+  const handleH=handle?.offsetHeight||32;
+  const listPx=Math.round((h-handleH)*splitPct);
+  layout.style.setProperty('--split-list-px',Math.max(72,listPx)+'px');
+  if(animate){
+    layout.classList.add('split-animate');
+    clearTimeout(applySplit._t);
+    applySplit._t=setTimeout(()=>layout.classList.remove('split-animate'),300);
+  }
+}
+
+function setSplit(ratio,animate){
+  splitPct=Math.max(.14,Math.min(.7,ratio));
+  applySplit(animate);
+}
+
+function snapSplit(velocity=0){
+  const targets=[SPLIT.detail,SPLIT.mid,SPLIT.list];
+  let best=targets[0],bestD=Infinity;
+  for(const t of targets){
+    let d=Math.abs(t-splitPct);
+    if(velocity>0.25&&t>splitPct)d-=0.06;
+    if(velocity<-0.25&&t<splitPct)d-=0.06;
+    if(d<bestD){bestD=d;best=t;}
+  }
+  setSplit(best,true);
+}
+
+function initMobileSplit(){
+  const handle=document.getElementById('splitHandle');
+  const layout=document.getElementById('layout');
+  if(!handle||!layout)return;
+
+  const yOf=e=>(e.touches?e.touches[0]:e).clientY;
+
+  const onStart=e=>{
+    if(!isMobile())return;
+    splitMoved=false;
+    splitDrag={y0:yOf(e),p0:splitPct,t0:performance.now()};
+    layout.classList.add('split-dragging');
+    handle.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  };
+
+  const onMove=e=>{
+    if(!splitDrag)return;
+    const handleH=handle.offsetHeight||32;
+    const h=layout.getBoundingClientRect().height-handleH;
+    const dy=yOf(e)-splitDrag.y0;
+    if(Math.abs(dy)>6)splitMoved=true;
+    setSplit(splitDrag.p0+dy/h,false);
+    e.preventDefault();
+  };
+
+  const onEnd=e=>{
+    if(!splitDrag)return;
+    const handleH=handle.offsetHeight||32;
+    const h=layout.getBoundingClientRect().height-handleH;
+    const dy=yOf(e)-splitDrag.y0;
+    const dt=(performance.now()-splitDrag.t0)/1000;
+    const vel=dy/h/Math.max(dt,.05);
+    layout.classList.remove('split-dragging');
+    if(!splitMoved){
+      setSplit(splitPct<SPLIT.mid?SPLIT.list:SPLIT.detail,true);
+    }else{
+      snapSplit(vel);
+    }
+    splitDrag=null;
+  };
+
+  handle.addEventListener('pointerdown',onStart);
+  handle.addEventListener('pointermove',onMove);
+  handle.addEventListener('pointerup',onEnd);
+  handle.addEventListener('pointercancel',onEnd);
+
+  window.addEventListener('resize',()=>{
+    if(isMobile())applySplit(false);
+  });
+  if(isMobile()){
+    splitPct=SPLIT.mid;
+    applySplit(false);
+  }
+}
+
+// ── visible list (stage + sort + filter) ─────────────────────────
+function visibleArtists(){
+  return displayedArtists();
+}
+
+function selIndex(){
+  return visibleArtists().findIndex(a=>a.id===sel);
+}
+
+// ── SoundCloud widget (visible embed in detail panel) ────────────
+function shouldUseCachedTracks(slug,list){
+  if(!slug||!list?.length)return !!(slug&&SC_LIVE[slug]?.tops?.length);
+  return !list.some(trackPlayable);
+}
+
+function loadSounds(attempt=0){
+  if(!widget)return;
+  widget.getSounds(s=>{
+    let list=s||[];
+    const a=A.find(x=>x.id===sel);
+    const slug=scSlug(a);
+    const ready=list.length>0&&list.every(t=>t&&t.title);
+    if(!ready&&attempt<20){
+      setTimeout(()=>loadSounds(attempt+1),200);
+      return;
+    }
+    if(shouldUseCachedTracks(slug,list)){
+      const cached=scSoundsFromCache(slug);
+      if(cached.length)list=cached;
+    }
+    sounds=applyTrkSort(list);
+    trackIdx=firstPlayableIdx();
+    scNote='';
+    renderTracks();
+    updatePlayerMeta();
+    if(pendingMediaAutoplay==='sc'){
+      pendingMediaAutoplay=null;
+      playTrack(trackIdx);
+    }
+  });
+}
+
+function bindWidget(){
+  const iframe=document.getElementById('scEmbed');
+  if(!iframe||typeof SC==='undefined')return;
+  widgetReady=false;
+  sounds=[];trackIdx=0;scNote='';
+  widget=SC.Widget(iframe);
+  widget.bind(SC.Widget.Events.READY,()=>{
+    widgetReady=true;
+    loadSounds();
+  });
+  widget.bind(SC.Widget.Events.PLAY,()=>{
+    if(listenTab==='yt'&&mediaSource!=='sc'){
+      try{widget.pause();}catch(_){}
+      return;
+    }
+    stopOtherMedia('sc');
+    playing=true;scNote='';
+    mediaSource='sc';
+    listenTab='sc';
+    applyListenTabUI('sc');
+    syncTrackIdx();
+    syncPlayerTransport();
+  });
+  widget.bind(SC.Widget.Events.PAUSE,()=>{playing=false;syncPlayerTransport();});
+  widget.bind(SC.Widget.Events.FINISH,()=>{navTrack(1);});
+  widget.bind(SC.Widget.Events.ERROR,()=>{
+    playing=false;
+    syncPlayerTransport();
+    const a=A.find(x=>x.id===sel);
+    const d=scSlug(a)&&SC_LIVE[scSlug(a)];
+    scNote=d?.pro
+      ? 'This track may not play in the embed (common with SoundCloud Pro) — open on SoundCloud (↗) or switch to YouTube.'
+      : 'This track cannot play in the embed — open it on SoundCloud (↗ on the track).';
+    renderTracks();
+  });
+}
+
+function syncTrackIdx(){
+  if(!widget)return;
+  widget.getCurrentSound(sound=>{
+    const mapped=indexInSounds(sound);
+    if(mapped>=0){
+      trackIdx=mapped;
+      renderTracks();
+      updatePlayerMeta();
+      return;
+    }
+    widget.getCurrentSoundIndex(i=>{trackIdx=i;renderTracks();updatePlayerMeta();});
+  });
+}
+
+function togglePlay(){
+  if(!sel)return;
+  if(mediaSource==='yt'){
+    const fr=document.querySelector('#ytPlayer iframe');
+    if(fr){
+      const cmd=ytPlaying?'pauseVideo':'playVideo';
+      try{
+        fr.contentWindow?.postMessage(JSON.stringify({event:'command',func:cmd,args:''}),'*');
+        ytPlaying=!ytPlaying;
+        syncPlayerTransport();
+      }catch(_){}
+    }else{
+      const a=A.find(x=>x.id===sel);
+      const vids=a?ytVideos(a):[];
+      if(vids.length)playYtVideo(vids[ytIdx]?.id||vids[0].id,ytIdx);
+    }
+    return;
+  }
+  if(mediaSource==='sc'&&widget&&widgetReady){
+    widget.isPaused(p=>{
+      if(p)widget.play();else widget.pause();
+    });
+    return;
+  }
+  const a=A.find(x=>x.id===sel);
+  if(!a)return;
+  const vids=ytVideos(a);
+  if(listenTab==='yt'&&vids.length){
+    playYtVideo(vids[ytIdx]?.id||vids[0].id,ytIdx);
+  }else if(widgetReady&&sounds.length){
+    playTrack(trackIdx>=0?trackIdx:firstPlayableIdx());
+  }else if(vids.length){
+    playYtVideo(vids[0].id,0);
+  }
+}
+
+function navTrack(dir){
+  const a=sel?A.find(x=>x.id===sel):null;
+  const vids=a?ytVideos(a):[];
+  if(mediaSource==='yt'||(mediaSource!=='sc'&&listenTab==='yt'&&vids.length)){
+    if(!vids.length)return;
+    const i=(ytIdx+dir+vids.length)%vids.length;
+    playYtVideo(vids[i].id,i);
+    return;
+  }
+  if(!widget||!widgetReady||!sounds.length)return;
+  const n=sounds.length;
+  let i=trackIdx;
+  for(let step=0;step<n;step++){
+    i=(i+(dir>=0?1:-1)+n)%n;
+    if(trackPlayable(sounds[i])){
+      playTrack(i);
+      return;
+    }
+  }
+}
+
+function playTrack(i){
+  if(!widget||!widgetReady||i<0)return;
+  const s=sounds[i];
+  if(!s||!trackPlayable(s))return;
+  stopOtherMedia('sc');
+  setListenTab('sc');
+  mediaSource='sc';
+  trackIdx=i;
+  scNote='';
+  renderTracks();
+  const url=scTrackUrl(s);
+  if(url){
+    widget.load(url,{
+      auto_play:true,
+      callback:()=>{
+        widget.getCurrentSoundIndex(idx=>{trackIdx=idx;renderTracks();updatePlayerMeta();});
+      },
+    });
+  }else{
+    widget.skip(i);
+    setTimeout(()=>widget.play(),350);
+  }
+  syncPlayerTransport();
+  document.getElementById('listenHub')?.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+// ── artist navigation ──────────────────────────────────────────
+function navArtist(dir){
+  const list=visibleArtists();
+  if(!list.length)return;
+  let i=selIndex();
+  if(i<0)i=dir>0?-1:0;
+  i=(i+dir+list.length)%list.length;
+  const cont=mediaSource||(listenTab==='yt'||listenTab==='sc'?listenTab:null);
+  pick(list[i].id,cont);
+}
+
+function markYtQueue(){
+  document.querySelectorAll('.listen-panel[data-panel="yt"] .q-item').forEach((b,j)=>b.classList.toggle('on',j===ytIdx));
+}
+
+function playYtVideo(id,idx){
+  stopOtherMedia('yt');
+  setListenTab('yt');
+  ytIdx=idx;
+  mediaSource='yt';
+  ytPlaying=true;
+  markYtQueue();
+  const mount=document.getElementById('ytPlayer');
+  if(!mount)return;
+  if(location.protocol==='file:'){
+    mount.innerHTML=`<p class="listen-empty">Run <code>python3 -m http.server 8765</code> and open via localhost.</p><a class="yt-open" href="https://www.youtube.com/watch?v=${id}" target="_blank" rel="noopener">Open on YouTube ↗</a>`;
+    syncPlayerTransport();
+    return;
+  }
+  mount.innerHTML=ytPlayerHtml(id,true);
+  syncPlayerTransport();
+  document.getElementById('listenHub')?.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function mountYtPlayer(a){
+  const vids=ytVideos(a);
+  if(!vids.length)return;
+  const v=vids[ytIdx]||vids[0];
+  const mount=document.getElementById('ytPlayer');
+  if(!mount)return;
+  if(location.protocol==='file:'){
+    mount.innerHTML=`<p class="listen-empty">Serve via <code>python3 -m http.server 8765</code> for embeds.</p>`;
+  }else{
+    mount.innerHTML=ytPlayerHtml(v.id,false);
+  }
+  markYtQueue();
+}
+
+function pick(id,continueMedia=null){
+  pauseYouTube();
+  pauseSoundCloud();
+  sel=id;
+  heroPhotoIdx=0;
+  ytIdx=0;
+  mediaSource=null;
+  ytPlaying=false;
+  playing=false;
+  const a=A.find(x=>x.id===id);
+  const vids=a?ytVideos(a):[];
+  const hasSc=!!(a&&scEmbedUrl(a));
+  if(continueMedia==='yt'&&vids.length)listenTab='yt';
+  else if(continueMedia==='sc'&&hasSc)listenTab='sc';
+  else listenTab=vids.length?'yt':hasSc?'sc':'yt';
+  if(continueMedia==='yt'&&vids.length)pendingMediaAutoplay='yt';
+  else if(continueMedia==='sc'&&hasSc)pendingMediaAutoplay='sc';
+  else pendingMediaAutoplay=null;
+  renderList();
+  renderDetail();
+  if(a)updatePlayerBar(a);
+  if(isMobile()){
+    setSplit(SPLIT.detail,true);
+    requestAnimationFrame(()=>{
+      document.getElementById('detail')?.scrollTo({top:0,behavior:'smooth'});
+    });
+  }
+}
+
+function updatePlayerBar(a){
+  const c=col(a.stage);
+  const url=photoUrl(a);
+  const thumb=document.getElementById('playerThumb');
+  if(url){
+    thumb.className='pthumb-sm';
+    thumb.innerHTML=`<img src="${url}" alt="" onerror="this.parentElement.className='pthumb-sm fallback';this.parentElement.style.color='${c}';this.parentElement.textContent='${ini(a.name)}'">`;
+  }else{
+    thumb.className='pthumb-sm fallback';
+    thumb.style.color=c;
+    thumb.textContent=ini(a.name);
+  }
+  document.getElementById('playerTitle').textContent=a.name;
+  document.getElementById('playerSub').textContent=`${stn(a.stage)} · ${a.slot}`;
+  const i=selIndex(), n=visibleArtists().length;
+  document.getElementById('btnPrevA').disabled=n<=1;
+  document.getElementById('btnNextA').disabled=n<=1;
+  syncPlayerTransport();
+}
+
+function updatePlayerMeta(){
+  const a=sel?A.find(x=>x.id===sel):null;
+  if(a)updatePlayerBar(a);
+}
+
+function setHeroPhoto(i){
+  heroPhotoIdx=i;
+  const a=A.find(x=>x.id===sel);
+  if(!a)return;
+  const urls=[a.img,...((a.photos)||[])].filter(Boolean);
+  const url=urls[i]||photoUrl(a);
+  const el=document.getElementById('heroImg');
+  if(!el)return;
+  if(url){
+    el.innerHTML=`<img src="${url}" alt="${a.name}" onerror="window.__imgFail&&__imgFail()">`;
+  }
+  document.querySelectorAll('.pthumb').forEach((t,j)=>t.classList.toggle('on',j===i));
+}
+
+window.__imgFail=function(){
+  const a=A.find(x=>x.id===sel);
+  if(!a)return;
+  const el=document.getElementById('heroImg');
+  const tried=(el.dataset.tried||'').split('|').filter(Boolean);
+  const chain=[scPhotoFromCache(a),a.ig_h?`https://unavatar.io/instagram/${encodeURIComponent(a.ig_h)}`:'',scSlug(a)?`https://unavatar.io/soundcloud/${encodeURIComponent(scSlug(a))}`:''].filter(Boolean);
+  const next=chain.find(u=>!tried.includes(u));
+  if(next){
+    tried.push(next);
+    el.dataset.tried=tried.join('|');
+    el.innerHTML=`<img src="${next}" alt="${a.name.replace(/"/g,'&quot;')}" onerror="window.__imgFail()">`;
+    return;
+  }
+  const c=col(a.stage);
+  el.innerHTML=`<div class="hero-img fallback" style="background:${c}15;color:${c}">${ini(a.name)}</div>`;
+};
+
+// ── render list ──────────────────────────────────────────────────
+
+function storyChapterId(){
+  return filt==='all'?null:filt;
+}
+
+function artistsOnStage(stageId){
+  return A.filter(a=>a.stage===stageId);
+}
+
+function renderStoryCtx(){
+  const el=document.getElementById('storyCtx');
+  if(!el)return;
+  const sid=storyChapterId();
+  if(!sid){
+    el.textContent='';
+    el.style.color='';
+  }else{
+    const ch=STORY.chapters[sid];
+    el.textContent=ch.tagline;
+    el.style.color=col(sid);
+  }
+  requestAnimationFrame(updateTopChrome);
+}
+
+function ensureSelection(){
+  const list=displayedArtists();
+  if(sel&&list.some(a=>a.id===sel))return;
+  sel=list.length?list[0].id:null;
+}
+
+function listGroupedByChapter(){
+  return filt==='all'&&sortBy==='lineup'&&!qSearch&&!hasActiveRefine();
+}
+
+function renderArtistRow(a){
+  const c=col(a.stage);
+  const tags=[];
+  if(a.warm)  tags.push('<span class="t tw">warm-up</span>');
+  if(a.live)  tags.push('<span class="t tl">live</span>');
+  if(a.hl)    tags.push('<span class="t th">headliner</span>');
+  if(a.local) tags.push('<span class="t tn">NL local</span>');
+  const pu=photoUrl(a);
+  const scD=scCached(a);
+  const sd=sortStatDisplay(a);
+  const statLbl=SORT_LABELS[sortBy]||'';
+  const statCol=sd?`<div class="ai-stat"><span class="ai-stat-val" style="color:${sd.c}">${sd.v}</span><span class="ai-stat-lbl">${statLbl}</span></div>`:'';
+  const av=pu
+    ?`<img class="av" src="${pu}" alt="" onerror="this.outerHTML='<div class=\\'av\\' style=\\'background:${c}15;color:${c}\\'>${ini(a.name)}</div>'">`
+    :`<div class="av" style="background:${c}15;color:${c}">${ini(a.name)}</div>`;
+  return `<div class="ai${a.id===sel?' on':''}" style="border-left-color:${c}" onclick="pick('${a.id}')">
+    ${av}
+    <div class="ai-info">
+      <div class="ai-name">${a.name}${sortBy==='lineup'&&scD?.f?` <span style="font-size:9px;color:#ff5500;font-weight:400;font-family:'Space Mono',monospace">${fmt(scD.f)}</span>`:''}</div>
+      <div class="ai-slot" style="color:${c}">${stn(a.stage)} · ${a.slot}</div>
+      <div class="ai-tags">${tags.join('')}</div>
+    </div>
+    ${statCol}
+  </div>`;
+}
+
+function listChapterHeader(stageId){
+  const c=col(stageId);
+  return `<div class="list-chapter" style="--ch-c:${c}"><div class="list-chapter-name">${stn(stageId)}</div></div>`;
+}
+
+function renderList(){
+  const items=visibleArtists();
+  const listEl=document.getElementById('list');
+  if(!items.length){
+    const hint=hasActiveRefine()||qSearch
+      ?'<button type="button" class="chip-clear" style="margin-top:6px" onclick="clearRefine();setSearch(\'\');document.getElementById(\'qSearch\').value=\'\'">Clear filters</button>'
+      :'';
+    listEl.innerHTML=`<div class="empty">No artists match<br><span style="font-size:10px;color:var(--di)">Try another stage or search</span>${hint}</div>`;
+    return;
+  }
+  if(listGroupedByChapter()){
+    let html='';
+    for(const sid of STAGE_ORDER){
+      const stageItems=items.filter(a=>a.stage===sid);
+      if(!stageItems.length)continue;
+      html+=listChapterHeader(sid);
+      html+=stageItems.map(renderArtistRow).join('');
+    }
+    listEl.innerHTML=html;
+    return;
+  }
+  listEl.innerHTML=items.map(renderArtistRow).join('');
+}
+
+function renderTracks(){
+  const el=document.getElementById('tracks');
+  const note=document.getElementById('scNote');
+  if(note)note.textContent=scNote||'';
+  if(!el)return;
+  if(!sounds.length){
+    el.innerHTML=widgetReady?'<div class="trk-load">No public tracks in embed</div>':'';
+    return;
+  }
+  el.innerHTML=sounds.map((s,i)=>{
+    const ok=trackPlayable(s);
+    const url=scTrackUrl(s);
+    const ext=url?`<a class="trk-ext" href="${url}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Open on SoundCloud">↗</a>`:'';
+    const pn=s?.playback_count??s?.play_count;
+    const plays=pn?`<span class="q-item-m">${fmt(pn)}</span>`:'';
+    return `<button type="button" class="q-item${i===trackIdx?' on':''}${ok?'':' off'}" onclick="playTrack(${i})">
+      <span class="q-item-n">${s.title||'Track '+(i+1)}</span>
+      ${plays}
+      <span class="q-item-m">${fmtDur(s.duration)}</span>${ext}
+    </button>`;
+  }).join('');
+}
+
+function fmtDur(ms){
+  if(!ms)return '';
+  const sec=Math.round(ms/1000);
+  const m=Math.floor(sec/60);
+  const s=sec%60;
+  return m+':'+String(s).padStart(2,'0');
+}
+
+// ── render detail ────────────────────────────────────────────────
+function renderDetail(){
+  const dp=document.getElementById('detail');
+  if(!sel){
+    pendingMediaAutoplay=null;
+    dp.innerHTML='<div class="empty">Select an artist from the list</div>';
+    return;
+  }
+  const a=A.find(x=>x.id===sel);
+  if(!a)return;
+  const c=col(a.stage);
+
+  const tags=[];
+  if(a.warm)  tags.push('<span class="t tw">warm-up</span>');
+  if(a.live)  tags.push('<span class="t tl">live set</span>');
+  if(a.hl)    tags.push('<span class="t th">poster headliner</span>');
+  if(a.local) tags.push('<span class="t tn">NL local</span>');
+
+  const mainPhoto=photoUrl(a);
+  const extra=[...(a.photos||[])];
+  const thumbs=[a.img,...extra].filter(Boolean);
+  const strip=thumbs.length>1?`<div class="photo-strip">${thumbs.map((u,i)=>`<img class="pthumb${i===heroPhotoIdx?' on':''}" src="${u}" alt="" onclick="setHeroPhoto(${i})">`).join('')}</div>`:'';
+
+  const heroInner=mainPhoto
+    ?`<img src="${mainPhoto}" alt="${a.name}" onerror="window.__imgFail()">`
+    :`<div class="hero-img fallback" style="background:${c}15;color:${c}">${ini(a.name)}</div>`;
+
+  const metrics=`
+    <div class="ai-stat"><span class="ai-stat-val" style="color:${c}">${fmt(a.ra)}</span><span class="ai-stat-lbl">RA</span></div>
+    <div class="ai-stat"><span class="ai-stat-val" style="color:${c}">${fmt(a.ig)}</span><span class="ai-stat-lbl">IG</span></div>`;
+
+  dp.innerHTML=`
+    <div class="detail-head" style="--stage-accent:${c}">
+      <div class="detail-av-col">
+        <div class="detail-av" id="heroImg">${heroInner}</div>
+        ${strip}
+      </div>
+      <div class="detail-body">
+        <h1 class="detail-name">${a.name}</h1>
+        <p class="detail-origin">${a.origin}</p>
+        <div class="detail-row">
+          <span class="detail-pill" style="background:${c};color:#080808">${stn(a.stage)} · ${a.slot}</span>
+          ${tags.length?`<div class="ai-tags">${tags.join('')}</div>`:''}
+        </div>
+      </div>
+      <div class="detail-metrics">${metrics}</div>
+    </div>
+
+    <div class="genres">${a.genres.map(g=>{
+      const on=exactGenreFilt&&exactGenreFilt.toLowerCase()===g.toLowerCase();
+      return `<button type="button" class="gc${on?' on':''}" onclick="filterByGenre('${jsAttrStr(g)}')">${g}</button>`;
+    }).join('')}</div>
+
+    ${listenHubHtml(a,c)}
+
+    ${scHeroHtml(a)}
+
+    <div class="detail-grid">
+      <div class="detail-card">
+        <div class="sec">Artist</div>
+        <div class="bio">${a.bio}</div>
+      </div>
+      <div class="detail-card">
+        <div class="sec">Links</div>
+        <div class="links">${a.links.map(l=>`
+      <a class="lk" href="${l.u}" target="_blank" rel="noopener">
+        <span class="lk-ico">${l.p}</span>
+        <div class="lk-t"><div class="lk-label">${l.l}</div><div class="lk-sub">${l.s}</div></div>
+        <span class="lk-arr">↗</span>
+      </a>`).join('')}
+        </div>
+      </div>
+    </div>
+
+  `;
+  bindWidget();
+  mountYtPlayer(a);
+  if(pendingMediaAutoplay==='yt'){
+    const vids=ytVideos(a);
+    if(vids.length){
+      const v=vids[ytIdx]||vids[0];
+      playYtVideo(v.id,ytIdx);
+    }else pendingMediaAutoplay=null;
+  }
+  syncPlayerTransport();
+}
+
+window.playYtVideo=playYtVideo;
+
+function go(s,btn){
+  filt=s;
+  document.querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  syncUrlState();
+  applyListControls();
+  if(isMobile()){
+    setSplit(SPLIT.mid,true);
+    requestAnimationFrame(()=>{
+      document.getElementById('detail')?.scrollTo({top:0,behavior:'smooth'});
+    });
+  }
+}
+
+document.addEventListener('click',()=>closePanels());
+document.getElementById('sortMenu')?.addEventListener('click',e=>e.stopPropagation());
+document.getElementById('refinePanel')?.addEventListener('click',e=>e.stopPropagation());
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='/'||e.key==='f'){
+    if(!e.target.matches('input,textarea')){
+      e.preventDefault();
+      const inp=document.getElementById('qSearch');
+      inp?.focus();
+      inp?.select();
+    }
+    return;
+  }
+  if(e.target.matches('input,textarea'))return;
+  if(e.key==='Escape'){closePanels();return;}
+  if(e.key==='ArrowRight'){e.preventDefault();navArtist(1);}
+  if(e.key==='ArrowLeft'){e.preventDefault();navArtist(-1);}
+  if(e.key===' '){e.preventDefault();togglePlay();}
+});
+
+window.addEventListener('resize',()=>requestAnimationFrame(updateTopChrome));
+
+// boot
+buildGenreSelect();
+readUrlState();
+refreshSortUI();
+applyListControls();
+initMobileSplit();
+</script>
+
+<!-- Node-only: refresh RA counts in this file (not executed in the browser). -->
+<script type="text/plain" id="fetchRaUtil">
+// FETCH_RA_START — run: sed -n '/FETCH_RA_START/,/FETCH_RA_END/p' crave-2026-explorer.html | sed '1d;$d' > _fetch-ra.js && node _fetch-ra.js
+#!/usr/bin/env node
+const fs = require('fs');
+const path = require('path');
+const HTML = path.join(__dirname, 'crave-2026-explorer.html');
+const QUERY = 'query($slug:String!){artist(slug:$slug){name followerCount}}';
+const EXTRA = { fredky: ['setaocmass'], chlstr: ['stranger-nl'] };
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+async function fetchRa(slug) {
+  const res = await fetch('https://ra.co/graphql', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'User-Agent': 'Crave2026Explorer/1.0 (local refresh script)' },
+    body: JSON.stringify({ query: QUERY, variables: { slug } }),
+  });
+  const json = await res.json();
+  const a = json.data?.artist;
+  if (!a) return null;
+  return { name: a.name, count: a.followerCount };
+}
+function raSlugFromBlock(block) {
+  const m = block.match(/ra\.co\/dj\/([^/'"\s]+)/);
+  return m ? m[1] : null;
+}
+function patchArtist(block, count, note) {
+  let out = block.replace(/\bra:\d+,/, `ra:${count},`);
+  out = out.replace(/\bra_c:(?:true|false),/, 'ra_c:true,');
+  const safe = note.replace(/'/g, "\\'");
+  if (/\bra_n:'/.test(out)) {
+    out = out.replace(/\bra_n:'(?:\\.|[^'])*',/g, '').replace(/\bra_c:true,/, `ra_c:true, ra_n:'${safe}',`);
+  } else {
+    out = out.replace(/\bra_c:true,/, `ra_c:true, ra_n:'${safe}',`);
+  }
+  return out;
+}
+async function main() {
+  let html = fs.readFileSync(HTML, 'utf8');
+  const blocks = [...html.matchAll(/\{id:'[^']+',[\s\S]*?\n \]\},/g)].map((m) => m[0]);
+  const updates = [];
+  for (const block of blocks) {
+    const idM = block.match(/\{id:'([^']+)'/);
+    if (!idM) continue;
+    const id = idM[1];
+    const slug = raSlugFromBlock(block);
+    if (!slug) { console.warn(`skip ${id}: no ra.co/dj link`); continue; }
+    const parts = [slug, ...(EXTRA[id] || [])];
+    let total = 0;
+    const names = [];
+    for (const s of parts) {
+      const info = await fetchRa(s);
+      await sleep(150);
+      if (!info) { console.warn(`  ${id}: slug "${s}" not found`); continue; }
+      total += info.count;
+      names.push(`${info.name} (${info.count.toLocaleString()})`);
+    }
+    if (!total) { console.warn(`skip ${id}: no counts`); continue; }
+    const note = parts.length > 1
+      ? `Confirmed combined RA followers: ${names.join(' + ')}.`
+      : `Confirmed via ra.co (${names[0]}).`;
+    updates.push({ id, total, note, slug });
+    console.log(`${id.padEnd(8)} ${String(total).padStart(6)}  ${slug}${parts.length > 1 ? ' +' + EXTRA[id].join('+') : ''}`);
+  }
+  for (const { id, total, note } of updates) {
+    const re = new RegExp(`\\{id:'${id}',[\\s\\S]*?\\n \\]\\},`);
+    const m = html.match(re);
+    if (!m) { console.warn(`block not found for ${id}`); continue; }
+    html = html.replace(m[0], patchArtist(m[0], total, note));
+  }
+  html = html.replace(/bars\(a\.ra,15000/g, 'bars(a.ra,35000');
+  fs.writeFileSync(HTML, html);
+  console.log(`\nUpdated ${updates.length} artists in ${HTML}`);
+}
+main().catch((e) => { console.error(e); process.exit(1); });
+// FETCH_RA_END
+</script>
+</body>
+</html>

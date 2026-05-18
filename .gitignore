@@ -1,0 +1,6 @@
+.sc-cache.json
+.sc-live.js
+node_modules/
+.DS_Store
+.netlify/
+index.html

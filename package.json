@@ -1,0 +1,8 @@
+{
+  "name": "crave-2026-explorer",
+  "private": true,
+  "scripts": {
+    "prepare:site": "cp crave-2026-explorer.html index.html",
+    "deploy:netlify": "npm run prepare:site && npx --yes netlify-cli deploy --prod --dir=."
+  }
+}

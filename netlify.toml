@@ -1,0 +1,3 @@
+[build]
+  publish = "."
+  command = "cp crave-2026-explorer.html index.html"
