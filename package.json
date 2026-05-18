@@ -2,11 +2,14 @@
   "name": "crave-2026-explorer",
   "private": true,
   "scripts": {
-    "prepare:site": "cp crave-2026-explorer.html index.html",
+    "preview": "cp crave-2026-explorer.html index.html",
     "fetch:bp": "node _fetch-bp.js",
     "fetch:bp:apply": "node _fetch-bp.js --apply",
     "fetch:genres": "node _fetch-bp.js --discogs",
     "fetch:genres:apply": "node _fetch-bp.js --discogs --apply",
-    "deploy:netlify": "npm run prepare:site && npx --yes netlify-cli deploy --prod --dir=."
+    "fetch:ra": "node _fetch-ra.js",
+    "fetch:sc": "node _fetch-sc.js",
+    "fetch:yt": "node _fetch-yt.js",
+    "fetch:photos": "node _fetch-photos.js"
   }
 }

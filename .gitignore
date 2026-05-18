@@ -1,9 +1,7 @@
 .sc-cache.json
 .bp-cache.json
 .env
-.bp-test.html
 .sc-live.js
 node_modules/
 .DS_Store
-.netlify/
 index.html
