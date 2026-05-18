@@ -3,6 +3,10 @@
   "private": true,
   "scripts": {
     "prepare:site": "cp crave-2026-explorer.html index.html",
+    "fetch:bp": "node _fetch-bp.js",
+    "fetch:bp:apply": "node _fetch-bp.js --apply",
+    "fetch:genres": "node _fetch-bp.js --discogs",
+    "fetch:genres:apply": "node _fetch-bp.js --discogs --apply",
     "deploy:netlify": "npm run prepare:site && npx --yes netlify-cli deploy --prod --dir=."
   }
 }
